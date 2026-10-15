@@ -1,0 +1,32 @@
+<div class="body">
+  <div class="page">
+    <div class="text-center" style="font-size: 20px;">
+      <img src="https://www.qg-avenir.iconestock.com/server/public/print/logo.png" width="50%">
+      <div style="font-size:small;">
+        <i></i><span>Commerçant Alimentation Générale</span><br>
+        <i></i><span>Marché Thiaroye Gare Cantine N°A27</span><br>
+        <i></i><span>77 232 18 94 - 78 124 64 67</span>
+        <div style="border-top: 0.5px dotted black;">&nbsp;</div>
+      </div>
+    </div>
+    <div class="text-center" style="font-weight: 600; font-size: medium;">
+      <div><i>Caisse </i>{{encaissement.auteur}}</div>
+      <div><i>Ticket N° </i>{{encaissement.numero}}</div>
+      <div><i>Date et l'heure: </i>{{encaissement.created_at | date:"d-MM-y à H:mm"}}</div>
+      <!-- | date:"d-MM-y à H:mm"  -->
+      <div><i>Client : </i>{{encaissement.client}}</div>
+    </div>
+    <div>
+      <div
+        style="font-weight: 500; font-size: 35px; text-align: center; margin-bottom: 1%; text-transform: capitalize; ">
+        Encaissement </div>
+      <div style="padding: 2%;text-align: center; font-weight: 800; font-size: 20px;">Montant : {{ encaissement.montant
+        | number: '1.0-0' }} FCFA </div>
+    </div>
+    <div style="text-align: center; margin-bottom: 5%;">
+      Copyright &copy; {{ year }} DKI <br>
+      Merci de votre visite. A bientôt !!!
+    </div>
+    <div style="border-top: 0.5px dotted black;">&nbsp;</div>
+  </div>
+</div>

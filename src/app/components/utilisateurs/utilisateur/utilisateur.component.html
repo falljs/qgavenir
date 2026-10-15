@@ -1,0 +1,257 @@
+<div class="container-fluid">
+
+  <app-menu-utilisateur></app-menu-utilisateur>
+
+  <div class="page-header d-print-none bg-white">
+    <div class="container-fluid">
+      <div class="row g-2 align-items-center">
+
+        <div class="card-body border-bottom py-3">
+          <div class="d-flex">
+            <div class="text-muted">
+              <div class="ms-2 input-group">
+                <span class="input-group-text d-none d-lg-block" id="basic-addon1">Rechercher :</span>
+                <input type="text" (keyup)="search()" id="inputSearch" class="form-control"
+                  placeholder="Rechercher un utilisateur">
+              </div>
+            </div>
+            <div class="ms-auto text-muted">
+              <div class="mx-2">
+                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' créer utilisateur Utilisateur')"
+                  href="javascript:void(0)" class="btn btn-primary" data-bs-toggle="modal"
+                  data-bs-target="#modalNewUser" (click)="addUser()">
+                  Nouveau
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row container-fluid mt-3">
+    <div class="col-md-4 col-lg-3 mb-4" *ngFor="let user of this.userService.listeUtilisateur
+    | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrUser }"
+      [hidden]="user.username == 'webmaster'">
+      <div class="card shadow-sm h-100"
+        *ngIf="this.userService.user.id == user.id || userService.checkPermissionExistence(firstRoleName+ ' supprimer utilisateur Utilisateur') ">
+        <a href="javascript:void(0)" (click)="getUtilisateur(user)" class="text-decoration-none">
+          <div class="card-body text-center p-4">
+            <div class="avatar-wrapper mb-3 mx-auto">
+              <span *ngIf="user.image" class="avatar avatar-xl rounded-circle"
+                style="background-image: url('{{userService.urlImg+user.image}}'); width: 80px; height: 80px; background-size: cover; background-position: center;">
+              </span>
+              <span *ngIf="!user.image" class="avatar avatar-xl rounded-circle"
+                style="background-image: url('/assets/img/avatar.png'); width: 80px; height: 80px; background-size: cover; background-position: center;">
+              </span>
+            </div>
+            <h5 class="card-title mb-1 text-dark fw-bold">{{user.prenom}} {{user.nom}}</h5>
+            <p class="text-muted mb-2" *ngIf="user.contact">Contact : {{user.contact}}</p>
+            <p class="text-muted small mb-2">{{user.email}}</p>
+            <!-- bg success si utilisateur à un role et bg-primary si pas de role -->
+            <span *ngIf="user.roles.length > 0" class="badge bg-success text-light mb-2">Rôle
+              {{user.roles[0]?.name}}</span>
+            <span *ngIf="user.roles.length == 0" class="badge bg-secondary text-light mb-2">Aucun rôle et
+              permissions</span>
+            <div> <span class="text-dark text-muted">Nom d'utilisateur :</span> {{user.username}}</div>
+          </div>
+        </a>
+        <div class="card-footer d-flex justify-content-around bg-light border-top">
+          <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary d-flex align-items-center"
+            (click)="getUtilisateur(user)">
+            <i class="fa fa-eye me-2"></i>Détail
+          </a>
+          <a href="tel:{{user.contact}}"
+            class="btn btn-sm btn-outline-success d-flex justify-content-center align-items-center gap-2">
+            <i class="fa fa-phone-square"></i>
+            <span>Appeler</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer d-flex align-items-center">
+    <p class="m-0 text-muted">Affichage
+      <span *ngIf="page == 1">{{defaultItem}}</span>
+      <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+      <span *ngIf="page != 1 && page == nbrPage">{{nbrUser}}</span>
+      sur <span>{{nbrUser}}</span> Utilisateurs
+    </p>
+    <ul class="pagination m-0 ms-auto">
+      <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+      </pagination-controls>
+    </ul>
+  </div>
+
+
+
+  <!-- Modal New User -->
+  <div class="modal modal-blur" id="modalNewUser" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <form [formGroup]="this.form" (ngSubmit)="onSubmit()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Nouveau utilisateur</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Prénom</label>
+                  <input type="text" class="form-control" formControlName="prenom" id="prenom">
+                  <div *ngIf="f['prenom'].touched && f['prenom'].invalid" class="alert alert-danger">
+                    <div *ngIf="f['prenom'].errors && f['prenom'].errors['required']">
+                      <span class="h4">Ce champs est requis !</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Nom</label>
+                  <input type="text" class="form-control" formControlName="nom" id="nom">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Adresse</label>
+                  <input type="text" class="form-control" formControlName="adresse" id="adresse">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Téléphone</label>
+                  <input type="text" class="form-control" formControlName="contact" id="contact">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Nom d'utilisateur</label>
+                  <input type="text" class="form-control ps-0" formControlName="username" id="username">
+                  <div *ngIf="f['username'].touched && f['username'].invalid" class="alert alert-danger">
+                    <div *ngIf="f['username'].errors && f['username'].errors['required']">
+                      <span class="h4">Ce champs est requis !</span>
+                    </div>
+                  </div>
+                  <div *ngIf="msg_user" class="alert alert-danger">
+                    <span>{{msg_user}}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Role</label>
+                  <select class="form-select" name="role" formControlName="role">
+                    <option selected value="0">Selectionnez un rôle</option>
+                    <option *ngFor="let role of listeRolePermisson" value="{{role.id}}">{{role.name}}</option>
+                  </select>
+                  <div *ngIf="f['role'].touched && f['role'].invalid" class="alert alert-danger">
+                    <div *ngIf="f['role'].errors && f['role'].errors['min']">
+                      <span class="h4"> Veuillez définir un rôle pour l'utilisateur !</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Mot de passe</label>
+                  <div class="input-group">
+                    <input [type]="showPassword ? 'text' : 'password'" class="form-control" formControlName="password"
+                      id="password">
+                    <button type="button" class="btn btn-outline-secondary" (click)="showHidePwd()"
+                      aria-label="Afficher/Masquer le mot de passe">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path *ngIf="!showPassword" d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path *ngIf="showPassword" d="M3 3l18 18" />
+                        <path *ngIf="!showPassword"
+                          d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div *ngIf="f['password'].touched && f['password'].invalid" class="alert alert-danger">
+                    <div *ngIf="f['password'].errors && f['password'].errors['required']">
+                      <span class="h4">Ce champ est requis !</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label">Confirmer le mot de passe</label>
+                  <div class="input-group">
+                    <input [type]="showPassword ? 'text' : 'password'" class="form-control" formControlName="c_password"
+                      id="c_password">
+                    <button type="button" class="btn btn-outline-secondary" (click)="showHidePwd()"
+                      aria-label="Afficher/Masquer le mot de passe">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path *ngIf="!showPassword" d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path *ngIf="showPassword" d="M3 3l18 18" />
+                        <path *ngIf="!showPassword"
+                          d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div *ngIf="f['c_password'].touched && f['c_password'].invalid" class="alert alert-danger">
+                    <div *ngIf="f['c_password'].errors && f['c_password'].errors['required']">
+                      <span class="h4">Ce champ est requis !</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <label class="form-label">Acces</label>
+              <div class="form-selectgroup-boxes row mb-3">
+                <div class="col-md-6">
+                  <label class="form-selectgroup-item">
+                    <input type="radio" name="blocked" value="0" class="form-selectgroup-input" checked
+                      formControlName="blocked" id="non_blocked">
+                    <span class="form-selectgroup-label d-flex align-items-center p-3">
+                      <span class="me-3">
+                        <span class="form-selectgroup-check"></span>
+                      </span>
+                      <span class="form-selectgroup-label-content">
+                        <span class="form-selectgroup-title strong mb-1">Oui</span>
+                        <span class="d-block text-muted">La personne pourra se connecter via ses identifiants
+                          !</span>
+                      </span>
+                    </span>
+                  </label>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-selectgroup-item">
+                    <input type="radio" name="blocked" value="1" class="form-selectgroup-input"
+                      formControlName="blocked" id="blocked">
+                    <span class="form-selectgroup-label d-flex align-items-center p-3">
+                      <span class="me-3">
+                        <span class="form-selectgroup-check"></span>
+                      </span>
+                      <span class="form-selectgroup-label-content">
+                        <span class="form-selectgroup-title strong mb-1">Non</span>
+                        <span class="d-block text-muted">La personne n'aura pas acces à l'application !</span>
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a href="javascript:void(0)" class="btn btn-dark" data-bs-dismiss="modal">
+              Annuler
+            </a>
+            <button class="btn btn-primary ms-auto" type="submit" [disabled]="!form.valid">
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

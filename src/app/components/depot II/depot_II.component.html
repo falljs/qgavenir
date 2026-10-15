@@ -1,0 +1,433 @@
+<div class="row row-deck row-cards">
+    <!--Liste des Produit-->
+    <div class="col-12">
+        <div class="card">
+
+            <div class="card-header">
+                <h3 class="card-title">Liste des Produits</h3>
+            </div>
+
+            <div class="card-body border-bottom py-3">
+                <div class="input-group">
+                    <span class="input-group-text d-none d-lg-block" id="basic-addon1">Rechercher :</span>
+                    <input type="text" (keyup)="search()" id="inputDesignation" class="form-control w-25"
+                        placeholder="Rechercher un produit">
+                    <select name="categorie" class="form-control mx-2" (change)="OnChangeCategory($event.target)">
+                        <option value=""> Choisis une Catégorie </option>
+                        <option *ngFor="let categorie of categories " value="{{ categorie }}"> {{ categorie }}</option>
+                    </select>
+                    <select name="qty" class="form-control mx-2" (change)="OnChangeQty($event.target)">
+                        <option value=""> Trier par Quantité </option>
+                        <option value="qtyOn">Quantité en stock</option>
+                        <option value="qtyOff">Quantité terminé</option>
+                    </select>
+                    <span *ngIf="printQty">
+                        <a *ngIf="qty == 'qtyOn'" href="javascript:void(0)" class="btn btn-warning mx-2"
+                            (click)="printQtyOn()">
+                            <i class="fa fa-print"></i>
+                        </a>
+                        <a *ngIf="qty == 'qtyOff'" href="javascript:void(0)" class="btn btn-warning mx-2"
+                            (click)="printQtyOff()">
+                            <i class="fa fa-print"></i>
+                        </a>
+                    </span>
+                    <span *ngIf="printCat">
+                        <a *ngIf="cat == ''" href="javascript:void(0)" class="btn btn-warning mx-2"
+                            (click)="printProduit()">
+                            <i class="fa fa-print"></i>
+                        </a>
+                        <a *ngIf="cat" href="javascript:void(0)" class="btn btn-warning mx-2"
+                            (click)="printCategorie()">
+                            <i class="fa fa-print"></i>
+                        </a>
+                    </span>
+
+                    <a href="javascript:void(0)" class="btn btn-primary mx-1" data-bs-toggle="modal"
+                        data-bs-target="#modal-product">
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th class="w-1">Code</th>
+                            <th>Désignation</th>
+                            <th>Quantité</th>
+                            <th>Prix D'Achat</th>
+                            <th>Prix global</th>
+                            <th>Prix de vente</th>
+                            <th>Réference</th>
+                            <th>Catégorie</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            *ngFor="let produit of produits | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrProduit }">
+                            <td><span class="text-muted">{{produit.code}}</span></td>
+                            <td>{{produit.designation}}</td>
+                            <td>
+                                <span *ngIf="produit.qty > produit.qtyAlert && produit.qty != 0"
+                                    class="fa fa-database text-success"></span>
+                                <span *ngIf="produit.qty <= produit.qtyAlert && produit.qty != 0"
+                                    class="fa fa-database text-warning"></span>
+                                <span *ngIf="produit.qty == 0" class="fa fa-database text-danger"></span>
+                                {{produit.qty}}
+                            </td>
+                            <td>{{produit.prix_achat | number: '1.0-0'}} F CFA</td>
+                            <td>{{produit.prix_achat * produit.qty | number: '1.0-0'}} F CFA</td>
+                            <td>{{produit.prix | number: '1.0-0'}} F CFA</td>
+                            <td>{{produit.ref}}</td>
+                            <td>{{produit.famille}}</td>
+                            <td>
+                                <span *ngIf="produit.qty > produit.qtyAlert && produit.qty != 0"
+                                    class="badge bg-success me-1">En stock</span>
+                                <span *ngIf="produit.qty <= produit.qtyAlert && produit.qty != 0"
+                                    class="badge bg-warning me-1">Présque terminé</span>
+                                <span *ngIf="produit.qty == 0" class="badge bg-danger me-1">Terminé</span>
+                            </td>
+                            <td>
+                                <a class="btn btn-sm text-warning mx-2" (click)="update(produit)" data-bs-toggle="modal"
+                                    data-bs-target="#modal-product-update">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <a *ngIf="this.userService.roleAdmin()" class="btn btn-sm text-danger mx-1"
+                                    (click)="modalDeleteProduit(produit.id)" data-bs-toggle="modal"
+                                    data-bs-target="#modal-danger">
+                                    <i class="fa fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer d-flex align-items-center" style="height: 40px;">
+                <p class="m-0 text-muted">Affichage
+                    <span *ngIf="page == 1">{{defaultItem}}</span>
+                    <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                    <span *ngIf="page != 1 && page == nbrPage">{{nbrProduit}}</span> sur <span>{{nbrProduit}}</span>
+                    Produits
+                </p>
+                <ul class="pagination m-0 ms-auto mt-3">
+                    <pagination-controls (pageChange)="page = $event" previousLabel="Précédent"
+                        nextLabel="Suivant"></pagination-controls>
+                </ul>
+            </div>
+
+            <div class="card p-2 mt-1">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="basic-url" style="font-weight: 600;" class="form-label mt-2">Total Général</label>
+                    </div>
+                    <div class="col-md-5">
+                        <span class="input-group">
+                            <input type="text" class="form-control bg-light" value="{{totalQty}}" readonly>
+                            <input type="text" class="form-control bg-light mx-2"
+                                value="{{totalPrix | number: '1.0-0'}} F CFA" readonly>
+                            <input type="text" class="form-control bg-light mx-2"
+                                value="{{totalPrixGlobal | number: '1.0-0'}} F CFA" readonly>
+                            <input type="text" class="form-control bg-light mx-2"
+                                value="{{totalPrixVente | number: '1.0-0'}} F CFA" readonly>
+                        </span>
+                    </div>
+                    <div class="col-md">
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal New Product -->
+<div class="modal modal-blur" id="modal-product" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un produit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+                    <div class="mb-2">
+                        <label class="form-label">Designation</label>
+                        <input type="text" class="form-control" placeholder="Designation" formControlName="designation"
+                            id="designation">
+                        <div *ngIf="f['designation'].touched && f['designation'].invalid" class="alert alert-danger">
+                            <div *ngIf="f['designation'].errors && f['designation'].errors['required']">Donner un nom au
+                                produit.</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md mb-2">
+                            <label class="form-label">Quantité</label>
+                            <input type="number" class="form-control" placeholder="Quantité" formControlName="qty"
+                                id="qty">
+                            <div *ngIf="f['qty'].touched && f['qty'].invalid" class="alert alert-danger">
+                                <div *ngIf="f['qty'].errors && f['qty'].errors['required']">Donner la quantité en stock.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md mb-2">
+                            <label class="form-label">Quantité Alert</label>
+                            <input type="text" class="form-control" placeholder="Qty alert stock"
+                                formControlName="qtyAlert" id="qtyAlert">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Prix d'achat</label>
+                            <input type="text" class="form-control" placeholder="Prix" formControlName="prix_achat"
+                                id="prix_achat">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Prix de vente</label>
+                            <input type="text" class="form-control" placeholder="Prix" formControlName="prix" id="prix">
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Fournisseur</label>
+                            <select class="form-select" formControlName="code_fn" id="code_fn">
+                                <option value="Fn_0">--Selectionner un Fournisseur--</option>
+                                <option *ngFor="let fournisseur of this.fournisseurs" value="{{fournisseur.code}}">
+                                    {{fournisseur.name}}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Réference</label>
+                            <input type="text" class="form-control" placeholder="Réference" formControlName="ref"
+                                id="ref">
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Catégorie</label>
+                            <input type="text" class="form-control" placeholder="Catégorie" formControlName="famille"
+                                id="famille">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Marque</label>
+                            <input type="text" class="form-control" placeholder="Marque" formControlName="marque"
+                                id="marque">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+
+                        <div class="col-md-12" *ngIf="!isChecked">
+                            <label class="form-check form-check-inline">
+                                <input type="checkbox" (change)="onCheckboxChange()" class="form-check-input">
+                                <span class="form-label">Stocker dans un entrepôt</span>
+                            </label>
+                        </div>
+
+                        <div class="col-md-12" *ngIf="isChecked">
+                            <label class="form-check form-check-inline">
+                                <input type="checkbox" (change)="unCheckboxChange()" class="form-check-input" checked>
+                                <span class="form-label">Stocker dans un entrepôt</span>
+                            </label>
+                        </div>
+
+                        <div class="col-md mb-2" *ngIf="isChecked">
+                            <label class="form-label">Entrepôt 1</label>
+                            <input type="number" class="form-control" formControlName="entrepot_1" id="entrepot_1">
+                        </div>
+
+                        <div class="col-md mb-2" *ngIf="isChecked">
+                            <label class="form-label">Entrepôt 2</label>
+                            <input type="number" class="form-control" formControlName="entrepot_2" id="entrepot_2">
+                        </div>
+
+                    </div>
+
+                    <div class="mb-2">
+                        <button type="button" class="btn btn-danger" style="float: left;"
+                            data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success" style="float: right;"
+                            [disabled]="!form.valid">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Update Product -->
+<div class="modal modal-blur" id="modal-product-update" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modification d'un produit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="formUp" (ngSubmit)="onUpdate()" autocomplete="off" novalidate>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <div class="card">
+                                <div class="card-header bg-light">Information Produit</div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label">Code Produit</label>
+                                        <input type="text" formControlName="code" class="form-control"
+                                            placeholder="Réference" id="code" readonly>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label">Designation</label>
+                                        <input type="text" class="form-control" placeholder="Designation"
+                                            formControlName="designation" id="designation">
+                                        <div *ngIf="fUp['designation'].touched && fUp['designation'].invalid"
+                                            class="alert alert-danger">
+                                            <div
+                                                *ngIf="fUp['designation'].errors && fUp['designation'].errors['required']">
+                                                Donner un nom au produit.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label">Réference</label>
+                                        <input type="text" class="form-control" placeholder="Réference"
+                                            formControlName="ref" id="ref">
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label">Catégorie</label>
+                                        <input type="text" class="form-control" placeholder="Catégorie"
+                                            formControlName="famille" id="famille">
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label">Marque</label>
+                                        <input type="text" class="form-control" placeholder="Marque"
+                                            formControlName="marque" id="marque">
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="card">
+                                <div class="card-header bg-light">Quantité Produit</div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label">Quantité de vente</label>
+                                        <input type="number" class="form-control" placeholder="Quantité"
+                                            formControlName="qty" id="qty">
+                                        <div *ngIf="fUp['qty'].touched && fUp['qty'].invalid"
+                                            class="alert alert-danger">
+                                            <div *ngIf="fUp['qty'].errors && fUp['qty'].errors['required']">Donner la
+                                                quantité en stock.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label">Quantité Alert</label>
+                                        <input type="text" class="form-control" placeholder="Qty alert stock"
+                                            formControlName="qtyAlert" id="qtyAlert">
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" formControlName="description" rows="8"
+                                            id="description"></textarea>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 mb-2">
+                            <div class="card">
+                                <div class="card-header bg-light">Prix Produit</div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">Prix d'achat</label>
+                                            <input type="text" class="form-control" placeholder="Prix"
+                                                formControlName="prix_achat" id="prix_achat">
+                                        </div>
+
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">Prix de vente</label>
+                                            <input type="text" class="form-control" placeholder="Prix"
+                                                formControlName="prix" id="prix">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-2">
+                                            <label class="form-label">Fournisseur</label>
+                                            <select class="form-select" formControlName="code_fn" id="code_fn"
+                                                (change)="fournisseurSelected($event.target)">
+                                                <option value="Fn_0">--Selectionner un Fournisseur--</option>
+                                                <option *ngFor="let fournisseur of this.fournisseurs"
+                                                    [ngClass]="{'code_fn':fournisseur.code}"
+                                                    value="{{fournisseur.code}}"> {{fournisseur.name}}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <button type="button" class="btn btn-danger" style="float: left;"
+                            data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success" style="float: right;"
+                            [disabled]="!formUp.valid">Mettre à jour</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Product -->
+<div class="modal modal-blur" id="modal-danger" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer ce produit ? Ce que vous avez fait ne peut être annulé.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteProduit()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

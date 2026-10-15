@@ -1,0 +1,85 @@
+<div class="container-fluid">
+
+    <app-menu-stock></app-menu-stock>
+
+    <div class="card mb-1 p-1">
+        <fieldset>
+            <legend class="mx-3">Recherche</legend>
+            <div class="input-group mb-1">
+                <button [disabled]="isDisable" type="button" (click)="getMouvements()"
+                    class="btn btn-sm btn-info mx-1 w-auto">
+                    <span *ngIf="!isDisable && !isClick">Tous les mouvements</span>
+                    <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+                    <span *ngIf="isDisable && isClick">Chargement...</span>
+                </button>
+                <input name="numero" type="number" (keyup)="search()" id="inputSearch" class="form-control mx-1 w-auto"
+                    placeholder="Par Numéro" />
+                <input onfocus="(this.type='date')" (change)="onChangeDate($event.target)" name="date" type="text"
+                    class="form-control mx-1 w-auto" placeholder="Par Date" />
+
+                <input onfocus="(this.type='date')" (change)="onChange2DatesFirst($event.target)" name="date"
+                    type="text" class="form-control mx-1 w-auto mt-2" placeholder="Date debut" />
+                <input onfocus="(this.type='date')" (change)="onChange2DatesSecond($event.target)" name="date"
+                    type="text" class="form-control mx-1 w-auto mt-2" placeholder="Date fin" />
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="card mb-2">
+        <div class="row p-3">
+            <div class="table-responsive border mb-3" style="height: 450px;">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th>Numéro</th>
+                            <th>Date</th>
+                            <th>Auteur</th>
+                            <th>Résponsable</th>
+                            <th>Mouvement</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="this.produitService.listMouvements.length == 0">
+                            <td class="font-italic text-center" colspan="8">
+                                <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                    Aucun mouvement éffectué pour le moment...
+                                </marquee>
+                            </td>
+                        </tr>
+                        <tr *ngFor="let mouvement of this.produitService.listMouvements">
+                            <td>{{mouvement.numero}}</td>
+                            <td>{{mouvement.created_at | date:"d-MM-y à H:mm"}}</td>
+                            <td>{{mouvement.auteur}}</td>
+                            <td>{{mouvement.responsable}}</td>
+                            <td>
+                                <span *ngIf="mouvement.type == 'Stock => Depôt'">Fora vers Sicap</span>
+                                <span *ngIf="mouvement.type != 'Stock => Depôt'">Sicap vers Fora</span>
+                            </td>
+                            <td>
+                                <a (click)="detail(mouvement.id)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                        class="fa fa-eye"></i></a>
+                                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier mouvement Stock')"
+                                    (click)="edit(mouvement.id)" class="btn btn-sm btn-outline-warning mx-1"><i
+                                        class="fa fa-edit"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer d-flex align-items-center" *ngIf="this.produitService.listMouvements.length > 100"
+                style="height: 40px;">
+                <p class="m-0 text-muted">Affichage
+                    <span *ngIf="page == 1">{{defaultItem}}</span>
+                    <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                    <span *ngIf="page != 1 && page == nbrPage">{{this.produitService.listMouvements.length}}</span> sur
+                    <span>{{this.produitService.listMouvements.length}}</span> Achats
+                </p>
+                <ul class="pagination m-0 ms-auto mt-3">
+                    <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+                    </pagination-controls>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

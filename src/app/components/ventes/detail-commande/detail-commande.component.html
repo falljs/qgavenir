@@ -1,0 +1,524 @@
+<app-menu-vente></app-menu-vente>
+<div class="card-header bg-white py-1 h3 mb-1 justify-content-center text-muted">Détail Commande {{commande.numero}}
+</div>
+
+<div class="card bg-transparent border-none mb-2 container-fluid">
+    <div class="btn-group mb-2 mt-2 table-responsive" role="group">
+        <button type="button" (click)="printTicket(commande)"
+            class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-print fa-1x mx-2"></i> Ticket</span>
+        </button>
+        <button type="button" (click)="printFacture(commande)"
+            class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-print fa-1x mx-2"></i> Facture</span>
+        </button>
+        <button type="button" (click)="printBordereau(commande)"
+            class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4">Bon de Livraison</span>
+        </button>
+
+        <button type="button" (click)="sendFactureWhatsApp(commande)"
+            [hidden]="!commande.numero_client || commande.code_client == 'C_1'"
+            [title]="!commande.numero_client ? 'Veuillez saisir le numéro client' : ''"
+            class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-whatsapp fa-1x"></i> Envoyer WhatsApp </span>
+        </button>
+        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modalNumero"
+            [hidden]="commande.numero_client || commande.code_client == 'C_1'"
+            [title]="!commande.numero_client ? 'Veuillez saisir le numéro client' : ''"
+            class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-whatsapp fa-1x"></i> Envoyer WhatsApp </span>
+        </a>
+
+        <div class="modal modal-blur" id="modalNumero" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                <div class="modal-content">
+
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-status bg-success"></div>
+                    <div class="modal-header">Mettre à jour son numéro</div>
+                    <div class="modal-body">
+                        <div class="mb-3 mt-2">
+                            <div class="md-2">
+                                <label for="phone" style="font-weight: 600;" class="form-label mt-1">
+                                    Numéro de Téléphone
+                                </label>
+                                <input placeholder="Exemple : +221771234567" type="number"
+                                    class="form-control border border-info border-5" [(ngModel)]="updateInfo.phone"
+                                    id="phone" name="phone">
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-center ">
+                            <div class="col-auto">
+                                <button [disabled]="!updateInfo.phone" (click)="onSubmitUpdatePhone()" type="button"
+                                    class="btn btn-success w-100" data-bs-dismiss="modal">Envoyer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier facture et devis Vente')"
+            type="button" (click)="editCommande(commande)" class="btn btn-outline-info alert alert-info btn-sm mx-3">
+            <span class="h4">Modifier</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer facture et devis Vente')"
+            type="button" (click)="openModalDeleteCommande(commande.id)" data-bs-toggle="modal"
+            data-bs-target="#modalDeleteCmd" class="btn btn-outline-danger alert alert-danger btn-sm mx-3"><span
+                class="h4">Supprimer</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' annuler facture Vente')" type="button"
+            (click)="openModalCancelCommande(commande.id)" data-bs-toggle="modal" data-bs-target="#modalCancelCmd"
+            class="btn btn-outline-danger alert alert-danger  btn-sm mx-3"><span class="h4">Annuler</span>
+        </button>
+    </div>
+</div>
+
+<div class="card container-fluid mb-2 table-responsive pb-3">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler une facture Vente')">
+                    <a href="#reglement" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+                        role="tab">Réglement</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' faire reduction Vente')">
+                    <a href="#remboursement" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                        tabindex="-1">Remboursement</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' faire remboursement Vente')">
+                    <a href="#reduction" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                        tabindex="-1">Réduction</a>
+                </li>
+
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane active show" id="reglement" role="tabpanel"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler une facture Vente')">
+                    <div class="input-group">
+                        <!-- Reglement  -->
+                        <span class="input-group-text">Encaissement</span>
+                        <input autofocus [disabled]="commande.restant <= 0" (keyup)="onVerser()" [(ngModel)]="verser"
+                            name="verser" type="number" class="form-control" />
+                        <span class="input-group-text">la monnaie</span>
+                        <input readonly [(ngModel)]="monnaie" name="monnaie" type="number" class="form-control bg-light"
+                            placeholder="la monnaie" />
+                        <span class="input-group-text">Encaissement Avec Wave</span>
+                        <input autofocus [disabled]="commande.restant <= 0" placeholder="Encaissement Avec Wave"
+                            [(ngModel)]="wave" name="wave" type="number" class="form-control" />
+                        <button [disabled]="!verser || disableBtn" (click)="onSubmitReglement()"
+                            class="btn btn-outline-success mx-1" type="button">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="tab-pane" id="remboursement" role="tabpanel">
+                    <div class="input-group">
+                        <!-- Reglement  -->
+                        <span class="input-group-text">Montant Rembourser</span>
+                        <input autofocus [disabled]="commande.restant >= 0" (keyup)="onVerser()"
+                            [(ngModel)]="mt_remboursement" name="mt_remboursement" type="number" class="form-control" />
+                        <span class="input-group-text">Motif du remboursement</span>
+                        <input [disabled]="commande.restant >= 0" [(ngModel)]="motif" name="motif" type="text"
+                            class="form-control" />
+                        <button [disabled]="!motif || !mt_remboursement || disableBtn" (click)="onSubmitRemboursement()"
+                            class="btn btn-outline-success mx-1" type="button">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="reduction" role="tabpanel">
+                    <div class="input-group">
+                        <!-- Reduction  -->
+                        <span class="input-group-text">Réduction</span>
+                        <input [disabled]="this.reduce > this.restant && alert() || !commande.restant"
+                            [(ngModel)]="reduce" name="reduce" type="number" class="form-control" />
+
+                        <button [disabled]="!reduce || disableBtn " (click)="onSubmitReduction()"
+                            class="btn btn-outline-success mx-1" type="button">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">N° Facture</label>
+                <span class="form-control bg-light">{{commande.numero}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Date Facture</label>
+                <span class="form-control bg-light">{{commande.created_at | date:"d-MM-y à H:mm"}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Client</label>
+                <span class="form-control bg-light">{{commande.nom_client}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Tva %</label>
+                <span class="form-control bg-light">{{commande.tottva}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Auteur</label>
+                <span class="form-control bg-light">{{commande.auteur}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="card h3 text-center">Liste Produits</div>
+                    <div class="table-responsive border mb-3">
+                        <div style="overflow-y:scroll;max-height:250px;" id="pdfTable" #pdftable="">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Produit</th>
+                                        <th scope="col">Prix</th>
+                                        <th scope="col">Qty</th>
+                                        <th scope="col">Sous Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        *ngFor="let ligne of this.ligneCommandeService.listLigneCommande ;let i = index;">
+                                        <td>{{ligne.produit}}</td>
+                                        <td>{{ligne.prix | number: '1.0-0'}}</td>
+                                        <td>{{ligne.qty}}</td>
+                                        <td>{{ligne.totht | number: '1.0-0'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card ">
+                        <div class="card-header mb-2 h3 text-center">
+                            Liste Réglements
+                            <span *ngIf="ligneRegelementService.listLigneReglement.length != 0"
+                                class="mx-3 justify-content-end">
+                                <i class=" btn fa fa-print" (click)="printReglement(commande)"></i>
+                            </span>
+                        </div>
+                        <div class="table-responsive border mb-3">
+                            <div style="overflow-y:scroll;max-height:250px;">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Date</th>
+                                            <th scope="col">Net</th>
+                                            <th scope="col">Avance</th>
+                                            <th scope="col">Restant</th>
+                                            <th scope="col">Option</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let ligne of ligneRegelementService.listLigneReglement; let i = index"
+                                            [ngStyle]="ligne.isDelete == 1 ? {'text-decoration': 'line-through'} : {}"
+                                            [ngClass]="{'alert alert-danger': ligne.isDelete == 1}">
+                                            <td>{{ligne.created_at | date:"d-MM-y à H:mm"}}</td>
+                                            <td>{{ligne.net | number: '1.0-0'}}</td>
+                                            <td *ngIf="ligne.remboursement < 0">{{ligne.remboursement | number:
+                                                '1.0-0'}}</td>
+                                            <td *ngIf="ligne.avance > 0">{{ligne.avance | number: '1.0-0'}} <small
+                                                    *ngIf="ligne.wave" class="text-primary">(Wave)</small> </td>
+                                            <td>{{ligne.restant | number: '1.0-0'}}</td>
+                                            <td>
+                                                <i [hidden]="ligne.isDelete == 1"
+                                                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer reglement Vente')"
+                                                    class="btn btn-sm mx-1 text-danger btn fa fa-trash"
+                                                    (click)="modalDeleteLigneReglement(ligne.id)" data-bs-toggle="modal"
+                                                    data-bs-target="#modalDeleteLigneReg">
+                                                </i>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Total HT</label>
+                <span class="form-control bg-light">{{commande.totht | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Total TTC</label>
+                <span class="form-control bg-light">{{commande.totttc | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Reduction</label>
+                <span class="form-control bg-light">{{commande.reduction | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Net à payer</label>
+                <span class="form-control bg-light">{{commande.net | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Versement</label>
+                <span class="form-control bg-light">{{commande.versement | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Restant</label>
+                <span class="form-control bg-light">{{commande.restant | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="card container-fluid mt-3" *ngIf="nbrComm != 0 && client.id != 1">
+    <div class="card table-responsive border mb-3">
+        <table class="table card-table table-vcenter text-nowrap datatable">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Numéro</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Total H</th>
+                    <th scope="col">Total tt</th>
+                    <th scope="col">Net à payer </th>
+                    <th scope="col">Restant </th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let comm of this.listCommClt | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrComm }"
+                    [hidden]="comm.id == commande.id">
+                    <td>{{comm.numero}}</td>
+                    <td>{{comm.date_comm}}</td>
+                    <td>{{comm.totht | number: '1.0-0'}} F CFA</td>
+                    <td>{{comm.totttc | number: '1.0-0'}} F CFA</td>
+                    <td>{{comm.net | number: '1.0-0'}} F CFA</td>
+                    <td>{{comm.restant | number: '1.0-0'}} F CFA</td>
+                    <td>
+                        <span *ngIf="comm.restant == 0" class="badge bg-success me-1">Payé</span>
+                        <span *ngIf="comm.versement != 0 && comm.restant != 0" class="badge bg-warning me-1">En
+                            Cours</span>
+                        <span *ngIf="comm.versement == 0 && comm.restant != 0" class="badge bg-danger me-1">Non
+                            Payé</span>
+                    </td>
+                    <td>
+                        <a [hidden]="!userService.checkPermissionExistence(firstRoleName+ ' modifier facture et devis Vente') && comm.restant ==0 "
+                            (click)="editCommande(comm)" class="btn btn-sm  btn-outline-warning mx-1"><i
+                                class="fa fa-edit"></i></a>
+                        <a (click)="detail(comm)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                class="fa fa-eye"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card-footer d-flex align-items-center">
+        <p class="m-0 text-muted">Affichage
+            <span *ngIf="page == 1">{{defaultItem}}</span>
+            <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+            <span *ngIf="page != 1 && page == nbrPage">{{nbrComm}}</span>
+            sur <span>{{nbrComm}}</span> Factures
+        </p>
+        <ul class="pagination m-0 ms-auto">
+            <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+            </pagination-controls>
+        </ul>
+    </div>
+</div>
+
+<!-- Modal Delete Ligne Rglementy -->
+<div class="modal modal-blur" id="modalDeleteCmd" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer la commande ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteCommande()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancel Commande -->
+<div class="modal modal-blur" id="modalCancelCmd" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir annuler la commande ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="cancelCommande()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Ligne Commande -->
+<div class="modal modal-blur" id="modalDeleteLigneReg" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer cette ligne ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteLigneReglement()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alert Delete Last Ligne Commande-->
+<div class="modal modal-blur" id="modalAlertLine" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Attention !</h3>
+                <div class="text-muted">
+                    Ajoutez un produit avant de supprimer la dernière ligne ou bien supprimer la commamde !
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

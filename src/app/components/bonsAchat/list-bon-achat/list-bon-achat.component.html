@@ -1,0 +1,121 @@
+<div class="container-fluid">
+
+    <app-menu-achat></app-menu-achat>
+
+    <div class="card mb-1 p-1">
+        <fieldset>
+            <legend class="mx-3">Recherche</legend>
+            <div class="input-group mb-1">
+                <button [disabled]="isDisable" type="button" (click)="getBonAchats()"
+                    class="btn btn-sm btn-info mx-1 w-auto">
+                    <span *ngIf="!isDisable && !isClick">Tous les bons d'achats</span>
+                    <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+                    <span *ngIf="isDisable && isClick">Chargement...</span>
+                </button>
+                <input name="numero" type="number" (keyup)="search()" id="inputSearch" class="form-control mx-1 w-auto"
+                    placeholder="Par Numéro" />
+                <input onfocus="(this.type='date')" (change)="onChangeDate($event.target)" name="date" type="text"
+                    class="form-control mx-1 w-auto" placeholder="Par Date" />
+                <div class="seach-fournisseurs-desktop" id="desktop">
+                    <div class="form-select selected" (click)="showDropdown = !showDropdown">
+                        <ng-container *ngIf="selectedFournisseur; else placeholder">
+                            <span>{{ selectedFournisseur.name }}</span>
+                        </ng-container>
+                        <ng-template #placeholder>
+                            <span>Sélectionner un fournisseur...</span>
+                        </ng-template>
+                    </div>
+
+                    <div class="form-select showlists" *ngIf="showDropdown">
+                        <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+                        <div class="showlists-item" *ngFor="let fournisseur of filteredFournisseur"
+                            (click)="selectFournisseur(fournisseur); showDropdown = false">
+                            <span>{{ fournisseur.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="seach-fournisseurs-mobile" id="mobile">
+                    <div class="form-select selected" (click)="showDropdown = !showDropdown">
+                        <ng-container *ngIf="selectedFournisseur; else placeholder">
+                            <span>{{ selectedFournisseur.name }}</span>
+                        </ng-container>
+                        <ng-template #placeholder>
+                            <span>Sélectionner un fournisseur...</span>
+                        </ng-template>
+                    </div>
+
+                    <div class="form-select showlists" *ngIf="showDropdown">
+                        <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+                        <div class="showlists-item" *ngFor="let fournisseur of filteredFournisseur"
+                            (click)="selectFournisseur(fournisseur); showDropdown = false">
+                            <span>{{ fournisseur.name }}</span>
+                        </div>
+                    </div>
+                </div>
+                <input onfocus="(this.type='date')" (change)="onChange2DatesFirst($event.target)" name="date"
+                    type="text" class="form-control mx-1 w-auto mt-2" placeholder="Date debut" />
+                <input onfocus="(this.type='date')" (change)="onChange2DatesSecond($event.target)" name="date"
+                    type="text" class="form-control mx-1 w-auto mt-2" placeholder="Date fin" />
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="card mb-2">
+        <div class="row p-3">
+            <div class="table-responsive border mb-3" style="height: 450px;">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th>Numéro</th>
+                            <th>Date</th>
+                            <th>Fournisseur</th>
+                            <th>Total H</th>
+                            <th>Total tt</th>
+                            <th>Net à payer </th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="this.bonAchatService.nbrAchat == 0">
+                            <td class="font-italic text-center" colspan="8">
+                                <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                    Aucun bon d'achat éffectuée pour le moment...
+                                </marquee>
+                            </td>
+                        </tr>
+                        <tr *ngFor="let achat of this.bonAchatService.listAchat">
+                            <td>{{achat.numero}}</td>
+                            <td>{{achat.date_achat}}</td>
+                            <td>{{achat.nom_fn}}</td>
+                            <td>{{achat.totht | number: '1.0-0'}} F CFA</td>
+                            <td>{{achat.totttc | number: '1.0-0'}} F CFA</td>
+                            <td>{{achat.net | number: '1.0-0'}} F CFA</td>
+                            <td>
+                                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifer bon achat Achat')"
+                                    (click)="editBonAchat(achat)" class="btn btn-sm btn-outline-warning mx-1"><i
+                                        class="fa fa-edit"></i></a>
+                                <a (click)="detail(achat)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                        class="fa fa-eye"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer d-flex align-items-center" *ngIf="bonAchatService.nbrAchat > 100"
+                style="height: 40px;">
+                <p class="m-0 text-muted">Affichage
+                    <span *ngIf="page == 1">{{defaultItem}}</span>
+                    <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                    <span *ngIf="page != 1 && page == nbrPage">{{nbrAchat}}</span> sur <span>{{nbrAchat}}</span>Bon
+                    d'achats
+                </p>
+                <ul class="pagination m-0 ms-auto mt-3">
+                    <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+                    </pagination-controls>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

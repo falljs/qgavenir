@@ -1,0 +1,117 @@
+<div class="container-fluid">
+
+  <app-menu-vente></app-menu-vente>
+  <div class="card-header bg-white py-1 h3 mb-1 justify-content-center text-muted">Liste des devis</div>
+
+  <div class="card mb-1 p-1">
+    <fieldset>
+      <legend class="mx-3">Recherche</legend>
+      <div class="input-group mb-1">
+        <button [disabled]="isDisable" type="button" (click)="getDevis()" class="btn btn-sm btn-info mx-1 w-auto">
+          <span *ngIf="!isDisable && !isClick">Tous les Devis</span>
+          <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+          <span *ngIf="isDisable && isClick">Chargement...</span>
+        </button>
+        <input name="numero" type="text" (keyup)="search()" id="inputSearch" class="form-control mx-1 w-auto"
+          placeholder="Par Numéro" />
+        <input onfocus="(this.type='date')" (change)="onChangeDate($event.target)" name="date" type="text"
+          class="form-control mx-1 w-auto" placeholder="Par Date" />
+        <div class="seach-clients-desktop" id="desktop">
+          <div class="form-select selected" (click)="showDropdown = !showDropdown">
+            <ng-container *ngIf="selectedClient; else placeholder">
+              <span>{{ selectedClient.name }}</span>
+            </ng-container>
+            <ng-template #placeholder>
+              <span>Sélectionner un client...</span>
+            </ng-template>
+            <span class="arrow">&#9662;</span>
+          </div>
+          <div class="form-select showlists" *ngIf="showDropdown">
+            <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+            <div class="showlists-item" *ngFor="let client of filteredClient"
+              (click)="selectClient(client); showDropdown = false">
+              <span>{{ client.name }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="seach-clients-mobile" id="mobile">
+          <div class="form-select selected" (click)="showDropdown = !showDropdown">
+            <ng-container *ngIf="selectedClient; else placeholder">
+              <span>{{ selectedClient.name }}</span>
+            </ng-container>
+            <ng-template #placeholder>
+              <span>Sélectionner un client...</span>
+            </ng-template>
+            <span class="arrow">&#9662;</span>
+          </div>
+          <div class="form-select showlists" *ngIf="showDropdown">
+            <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+            <div class="showlists-item" *ngFor="let client of filteredClient"
+              (click)="selectClient(client); showDropdown = false">
+              <span>{{ client.name }}</span>
+            </div>
+          </div>
+        </div>
+        <input name="type" type="text" (keyup)="search()" id="inputSearchType" class="form-control mx-1 w-auto"
+          placeholder="Par Type" />
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="card mb-2">
+    <div class="row p-3">
+      <div class="table-responsive border mb-3" style="height: 530px;">
+        <table class="table card-table table-vcenter text-nowrap datatable">
+          <thead>
+            <tr>
+              <th>Numéro</th>
+              <th>Date</th>
+              <th>Client</th>
+              <th>Total H</th>
+              <th>Total tt</th>
+              <th>Net à payer </th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="this.devisService.nbrDvs == 0">
+              <td class="font-italic text-center" colspan="7">
+                <marquee behavior="alternate" direction="" class="h3 text-warning">
+                  Aucun devis disponible pour le moment...
+                </marquee>
+              </td>
+            </tr>
+            <tr
+              *ngFor="let devis of this.devisService.listDevis | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrDvs }">
+              <td>{{devis.numero}}</td>
+              <td>{{devis.created_at | date:"d-MM-y à H:mm"}}</td>
+              <td>{{devis.nom_client}}</td>
+              <td>{{devis.totht | number: '1.0-0'}} F CFA</td>
+              <td>{{devis.totttc | number: '1.0-0'}} F CFA</td>
+              <td>{{devis.net | number: '1.0-0'}} F CFA</td>
+              <td>
+                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier facture et devis Vente')"
+                  (click)="editDevis(devis)" class="btn btn-sm btn-outline-warning mx-1"><i class="fa fa-edit"></i></a>
+                <a (click)="detail(devis)" class="btn btn-sm btn-outline-primary mx-1"><i class="fa fa-eye"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer d-flex align-items-center" *ngIf="this.devisService.nbrDvs > 100" style="height: 40px;">
+        <p class="m-0 text-muted">Affichage
+          <span *ngIf="page == 1">{{defaultItem}}</span>
+          <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+          <span *ngIf="page != 1 && page == nbrPage">{{nbrDvs}}</span>
+          sur <span>{{nbrDvs}}</span> Devis
+        </p>
+        <ul class="pagination m-0 ms-auto mt-3">
+          <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+          </pagination-controls>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

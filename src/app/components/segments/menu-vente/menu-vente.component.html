@@ -1,0 +1,48 @@
+<div class="card container-fluid mb-2 table-responsive pb-3 sticky-top">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' créer facture et devis Vente')">
+                    <a href="javascript:void(0)" routerLink='/vente' class="nav-link" data-bs-toggle="tab"
+                        [ngClass]="{ 'active': router.url === '/vente' }" aria-selected="false" role="tab">Créer</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir facture Vente')">
+                    <a href="javascript:void(0)" routerLink='/ticket' class="nav-link" data-bs-toggle="tab"
+                        [ngClass]="{ 'active': router.url === '/ticket' }" aria-selected="false" role="tab"
+                        tabindex="-1">Factures</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir devis Vente')">
+                    <a href="javascript:void(0)" routerLink='/devis' class="nav-link" data-bs-toggle="tab"
+                        [ngClass]="{ 'active': router.url === '/devis' }" aria-selected="false" role="tab"
+                        tabindex="-1">Devis</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir bon Vente')">
+                    <a href="javascript:void(0)" routerLink='/bon' class="nav-link" data-bs-toggle="tab"
+                        [ngClass]="{ 'active': router.url === '/bon' }" aria-selected="false" role="tab"
+                        tabindex="-1">Bons</a>
+                </li>
+
+                <li hidden class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir encaissement Vente')">
+                    <a href="javascript:void(0)" routerLink='/encaissement' class="nav-link" data-bs-toggle="tab"
+                        [ngClass]="{ 'active': router.url === '/encaissement' }" aria-selected="false" role="tab"
+                        tabindex="-1">Encaissement</a>
+                </li>
+            </ul>
+            <a *ngIf="router.url === '/ticket' && userService.checkPermissionExistence(firstRoleName+ ' créer facture et devis Vente')"
+                href="javascript:void(0)" routerLink='/vente' class="btn btn-success mx-1 w-auto">Nouvelle
+                Facture</a>
+            <a *ngIf="router.url === '/devis' && userService.checkPermissionExistence(firstRoleName+ ' créer facture et devis Vente')"
+                href="javascript:void(0)" routerLink='/vente' class="btn btn-success mx-1 w-auto">Nouveau Devis</a>
+            <a *ngIf="router.url === '/bon' && userService.checkPermissionExistence(firstRoleName+ ' créer bon Vente')"
+                href="javascript:void(0)" routerLink='/bon-nouveau' class="btn btn-success mx-1 w-auto">Nouveau Bon</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,61 @@
+<app-menu-dette></app-menu-dette>
+<div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">Liste des dettes datant plus de 15 jours</span>
+</div>
+<div class="row row-deck row-cards">
+  <!--Liste des voiture-->
+  <div class="col-md-12">
+    <div class="card bg-light">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Centre de Notifications</h3>
+        <span class="text-warning"><i class="fa fa-info-circle rounded"></i> Vous pouvez rechercher par numéro Commande
+          ou par client</span>
+        <span class="search-bar">
+          <input type="text" class="form-control" placeholder="Rechercher une notification" [(ngModel)]="searchTerm"
+            (input)="onSearch()" />
+        </span>
+      </div>
+
+      <div class="card-body">
+        <div class="table-responsive bg-white mb-3">
+          <table class="table card-table">
+            <thead>
+              <tr>
+                <th>N°</th>
+                <th>Date</th>
+                <th>Message</th>
+                <th>Commande</th>
+                <th>Date Commande</th>
+                <th>Client</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let notif of filteredNotifications">
+                <td><span class="text-muted">#{{ notif.id }}</span></td>
+                <td>{{ notif.created_at | date: 'd-M-y à H:mm' }}</td>
+                <td>{{ notif.message }}</td>
+                <td>{{ notif.order.numero }}</td>
+                <td>{{ notif.order.created_at | date: 'd-M-y à H:mm' }}</td>
+                <td>{{ notif.order.nom_client }}</td>
+                <td>
+                  <span *ngIf="notif.order.restant == 0" class="badge bg-success me-1">Payé</span>
+                  <span *ngIf="notif.order.versement != 0 && notif.order.restant != 0" class="badge bg-warning me-1">En
+                    Cours</span>
+                  <span *ngIf="notif.order.versement == 0 && notif.order.restant != 0" class="badge bg-danger me-1">Non
+                    Payé</span>
+                </td>
+                <td>
+                  <a class="btn btn-sm text-primary" (click)="onNotificationClick(notif)">
+                    <i class="fa fa-eye"></i>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

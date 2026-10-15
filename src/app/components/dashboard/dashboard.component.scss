@@ -1,0 +1,77 @@
+#chart-mentions {
+    position: relative;
+    height: 270px;
+    width: 100%;
+}
+
+@media print {
+
+    /* Mise en page générale */
+    body {
+        margin: 0;
+        padding: 20px;
+        font-size: 12px;
+    }
+
+    /* Chaque carte prend toute la largeur */
+    .row {
+        display: block !important;
+    }
+
+    .col-md-6 {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        flex: none !important;
+        margin-bottom: 30px !important;
+    }
+
+    /* Évite qu'une carte soit coupée entre deux pages */
+    .card,
+    .print-section {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin-bottom: 40px;
+    }
+
+    /* Les tableaux doivent être entièrement visibles */
+    .table-responsive {
+        overflow: visible !important;
+        max-height: none !important;
+    }
+
+    .table {
+        width: 100% !important;
+        border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+        border: 1px solid #ddd;
+        padding: 6px;
+        vertical-align: middle;
+    }
+
+    /* Masquer les champs de recherche et de filtre */
+    input,
+    select,
+    .form-control {
+        display: none !important;
+    }
+
+    /* Masquer les barres de progression */
+    .progress {
+        display: none !important;
+    }
+
+    /* Supprimer les animations inutiles */
+    marquee {
+        display: none !important;
+    }
+
+    /* Le graphique doit être visible */
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+}

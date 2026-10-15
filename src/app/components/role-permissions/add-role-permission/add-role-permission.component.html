@@ -1,0 +1,72 @@
+<div class="card-header mb-2">
+  <ul class="nav card-header-tabs nav-fill" data-bs-toggle="tabs" role="tablist">
+    <li class="nav-item bg-secondary" role="presentation">
+      <a href="javascript:void(0)" [routerLink]="('/utilisateur')" class="nav-link active" data-bs-toggle="tab"
+        aria-selected="true" role="tab"><span class="text-white">Liste des utilisateurs</span></a>
+    </li>
+    <li class="nav-item bg-secondary mx-2" role="presentation">
+      <a href="javascript:void(0)" [routerLink]="('/role-permission')" class="nav-link" data-bs-toggle="tab"
+        aria-selected="false" role="tab" tabindex="-1"><span class="text-white">Gestions des rôles et
+          permissions</span></a>
+    </li>
+  </ul>
+</div>
+
+<div class="main-content  my-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-light">
+      <div class="mb-0 h3">Ajouter un rôle et ses permissions</div>
+    </div>
+    <div class="card-body">
+
+      <!-- Nom du rôle -->
+      <div class="mb-4">
+        <label for="roleName" class="form-label fw-bold">Nom du rôle</label>
+        <input type="text" id="roleName" class="form-control" [(ngModel)]="name" />
+      </div>
+
+      <!-- Permissions -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Permissions</label>
+      </div>
+
+      <div *ngFor="let module of permissions; let i = index" class="mb-4">
+        <div class="card border">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <strong>Module : {{ module.module }}</strong>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="module.etat" (change)="toggleAll(i)"
+                id="checkAll-{{i}}" />
+              <label class="form-check-label" for="checkAll-{{i}}">
+                Tout cocher
+              </label>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div *ngFor="let action of module.options; let j = index" class="col-md-6 col-lg-4 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" [(ngModel)]="action.checked"
+                    (change)="checkIfAllSelected(i)" id="perm-{{i}}-{{j}}" />
+                  <label class="form-check-label" for="perm-{{i}}-{{j}}">
+                    {{ action.name }}
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton Enregistrer -->
+      <div class="text-end mt-4">
+        <button [disabled]="isDisable " type="button" (click)="saveRole()" class="btn btn-success">
+          <span *ngIf="!isDisable && !isClick">Enregistrer</span>
+          <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+          <span *ngIf="isDisable && isClick">Chargement...</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

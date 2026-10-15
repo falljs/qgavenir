@@ -1,0 +1,15 @@
+<div class="card-header">
+    <ul class="nav card-header-tabs nav-fill" data-bs-toggle="tabs" role="tablist">
+        <li class="nav-item bg-secondary" role="presentation"
+            *ngIf="userService.checkPermissionExistence(firstRoleName+ ' avoir accès Utilisateur')">
+            <a href="javascript:void(0)" [routerLink]="('/utilisateur')" class="nav-link active" data-bs-toggle="tab"
+                aria-selected="true" role="tab"><span class="text-white">Liste des utilisateurs</span></a>
+        </li>
+        <li class="nav-item bg-secondary mx-2" role="presentation"
+            *ngIf="userService.checkPermissionExistence(firstRoleName+ ' avoir accès rôle et permissions Utilisateur')">
+            <a href="javascript:void(0)" [routerLink]="('/role-permission')" class="nav-link" data-bs-toggle="tab"
+                aria-selected="false" role="tab" tabindex="-1"><span class="text-white">Gestions des rôles et
+                    permissions</span></a>
+        </li>
+    </ul>
+</div>

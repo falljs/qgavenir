@@ -1,0 +1,61 @@
+.seach-fournisseurs {
+    width: 90%;
+    position: relative;
+    font-family: Arial, sans-serif;
+}
+
+.selected {
+    border: 1px solid #ccc;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.showlists {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    z-index: 9000;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.showlists input {
+    width: 100%;
+    padding: 6px;
+    box-sizing: border-box;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    outline: none;
+}
+
+.showlists-item {
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.showlists-item:hover {
+    background-color: #f0f0f0;
+}
+
+.table-scroll-container {
+    max-height: 400px;
+    /* ou une autre valeur selon ton design */
+    overflow-y: auto;
+}
+
+.sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* pour qu’il reste au-dessus du contenu */
+    background-color: white;
+    /* ou une autre couleur si besoin */
+}

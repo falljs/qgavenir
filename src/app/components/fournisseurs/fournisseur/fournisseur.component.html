@@ -1,0 +1,126 @@
+<div class="container-fluid">
+  <app-menu-crm></app-menu-crm>
+
+  <div class="card bg-light mb-2">
+    <div class="card-header bg-white">
+      <h3 class="card-title">Liste des Fournisseurs</h3>
+    </div>
+    <div class="card-body border-bottom py-3 bg-white">
+      <div class="input-group">
+        <span class="input-group-text d-none d-lg-block" id="basic-addon1">Rechercher :</span>
+        <input type="text" (keyup)="search()" id="InputSearch" class="form-control"
+          placeholder="Rechercher un fournisseur">
+        <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' créer fournisseur CRM')"
+          href="javascript:void(0)" class="btn btn-primary mx-2" data-bs-toggle="modal"
+          data-bs-target="#modalNewFournisseur" (click)="addFournisseur()">Nouveau Fournisseur
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row container-fluid">
+    <div class="col-md-4 col-lg-3 mb-4" *ngFor="let fournisseur of this.fournisseurService.listFournisseur
+    | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrFournisseur }"
+      [hidden]="fournisseur.name == 'Néant'">
+      <div class="card shadow-sm h-100">
+        <a href="javascript:void(0)" (click)="detail(fournisseur)" class="text-decoration-none">
+          <div class="card-body text-center p-4">
+            <div class="avatar-wrapper mb-3 mx-auto">
+              <span *ngIf="!fournisseur.image" class="avatar avatar-xl rounded-circle"
+                style="background-image: url('assets/img/avatar.png'); width: 150px; height: 150px; background-size: cover; background-position: center;">
+              </span>
+              <span *ngIf="fournisseur.image" class="avatar avatar-xl rounded-circle"
+                style="background-image: url('{{fournisseur.image}}'); width: 150px; height: 150px; background-size: cover; background-position: center;">
+              </span>
+            </div>
+            <h5 class="card-title mb-1 text-dark fw-bold">{{fournisseur.name}}</h5>
+            <p class="text-muted mb-2">{{fournisseur.phone ?? 'Pas de numero XX XXX'}}</p>
+            <p class="text-muted small mb-2">{{fournisseur.email ?? "Pas d'email"}}</p>
+            <span
+              [ngClass]="!fournisseur.address ? 'badge bg-secondary text-light' : 'badge bg-success text-light' ">{{fournisseur.address
+              ?? "Pas d'adresse"}}</span>
+          </div>
+        </a>
+        <div class="card-footer d-flex justify-content-around bg-light border-top">
+          <a href="javascript:void(0)" class="btn btn-sm btn-outline-primary d-flex align-items-center"
+            (click)="detail(fournisseur)">
+            <i class="fa fa-eye me-2"></i>Détail
+          </a>
+          <a href="tel:{{fournisseur.phone}}" class="btn btn-sm btn-outline-success d-flex align-items-center">
+            <i class="fa fa-phone-square me-2"></i>Appeler
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer d-flex align-items-center">
+      <p class="m-0 text-muted">Affichage
+        <span *ngIf="page == 1">{{defaultItem}}</span>
+        <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+        <span *ngIf="page != 1 && page == nbrPage">{{nbrFn}}</span>
+        sur <span>{{nbrFournisseur}}</span> Fournisseur
+      </p>
+      <ul class="pagination m-0 ms-auto">
+        <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+        </pagination-controls>
+      </ul>
+    </div>
+
+    <!-- Modal New Fournisseur -->
+    <div class="modal modal-blur" id="modalNewFournisseur" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Nouveau Fournisseur</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form [formGroup]="this.form" (ngSubmit)="onSubmit()">
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Prénom & Nom</label>
+                    <input type="text" class="form-control" formControlName="name" id="name">
+                    <div *ngIf="f['name'].touched && f['name'].invalid" class="alert alert-danger">
+                      <div *ngIf="f['name'].errors && f['name'].errors['required']">Ce champs est requis !</div>
+                    </div>
+                    <div *ngIf="msg_nom" class="alert alert-danger">
+                      <span>{{msg_nom}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Surnom</label>
+                    <input type="text" class="form-control" formControlName="surnom" id="surnom">
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" formControlName="email" id="email">
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Adresse</label>
+                    <input type="text" class="form-control" formControlName="address" id="address">
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Téléphone</label>
+                    <input type="text" class="form-control" formControlName="phone" id="phone">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" [disabled]="!form.valid" class="btn btn-primary ms-auto">Enregistrer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>

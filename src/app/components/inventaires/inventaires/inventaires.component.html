@@ -1,0 +1,284 @@
+<div class="row row-deck row-cards">
+
+    <app-menu-stock></app-menu-stock>
+
+    <!--Liste des Produit-->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Liste des inventaires</h3>
+                <!-- Afficher par quantité -->
+                <select class="form-select w-auto mx-2" [(ngModel)]="defaultItem" (change)="onItemsPerPageChange()">
+                    <option value="50" selected disabled>Afficher par 50</option>
+                    <option [value]="50">50</option>
+                    <option [value]="100">100</option>
+                    <option [value]="150">150</option>
+                    <option [value]="200">200</option>
+                    <option [value]="nbrProduit">Tous</option>
+                </select>
+            </div>
+            <div class="table-responsive">
+                <table class="table card-table table-vcenter text-nowrap datatable">
+                    <thead>
+                        <tr>
+                            <th class="w-1">N°</th>
+                            <th>Nom du site</th>
+                            <th>Inventaire</th>
+                            <th>Date Création</th>
+                            <th>Dernière modification</th>
+                            <th>Status</th>
+                            <th>Auteur</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            *ngFor="let inventaire of inventaires | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrProduit }">
+                            <td><span class="text-muted">{{inventaire.numero}}</span></td>
+                            <td>
+                                <a class="text-dark" (click)="detail(inventaire)" data-bs-toggle="offcanvas"
+                                    href="#detailOffcanvasStart" role="button" aria-controls="detailOffcanvasStart">
+                                    {{inventaire.site}}
+                                </a>
+                            </td>
+                            <td>{{inventaire.name}}</td>
+                            <td>{{inventaire.created_at | date: 'EEEE d MMMM y à HH:mm'}}</td>
+                            <td>{{inventaire.updated_at | date: 'EEEE d MMMM y à HH:mm'}}</td>
+                            <td [ngClass]="{
+                                    'text-secondary': inventaire.status === 'Brouillon',
+                                    'text-warning': inventaire.status === 'En cours',
+                                    'text-success': inventaire.status === 'Terminer'
+                                    }">
+                                {{ inventaire.status }}
+                            </td>
+
+                            <td>{{inventaire.auteur}}</td>
+                            <td>
+                                <div class="btn-list flex-nowrap">
+                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' faire inventaire Stock')"
+                                        class="btn btn-sm btn-primary" (click)="detail(inventaire)"
+                                        href="javascript:void(0)">
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier inventaire Stock')"
+                                        class="btn btn-sm btn-warning" (click)="edit(inventaire)"
+                                        href="javascript:void(0)"
+                                        [hidden]="inventaire.status == 'Terminer' || inventaire.status == 'En cours'">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer inventaire Stock')"
+                                        class="btn btn-sm btn-danger" (click)="delete(inventaire)"
+                                        href="javascript:void(0)" data-bs-toggle="modal"
+                                        data-bs-target="#modal-delete-inventaire"
+                                        [hidden]="inventaire.status == 'Terminer'">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer d-flex align-items-center" style="height: 40px;">
+                <p class="m-0 text-muted">Affichage
+                    <span *ngIf="page == 1">{{defaultItem}}</span>
+                    <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                    <span *ngIf="page != 1 && page == nbrPage">{{nbrProduit}}</span>
+                    sur <span>{{nbrProduit}}</span> Produits
+                </p>
+                <ul class="pagination m-0 ms-auto mt-3">
+                    <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+                    </pagination-controls>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal New Product -->
+<div class="modal modal-blur" id="modal-new-inventaire" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un produit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+                    <div class="mb-2">
+                        <label class="form-label">Nom de l'inventaire <span class="text-danger mx-1">*</span></label>
+                        <input type="text" class="form-control" placeholder="Nom de l'inventaire" formControlName="name"
+                            id="name">
+                        <div *ngIf="f['name'].touched && f['name'].invalid" class="alert alert-danger">
+                            <div *ngIf="f['name'].errors && f['name'].errors['required']">Donner un nom à l'inventaire.
+                            </div>
+                            <div *ngIf="f['name'].errors && f['name'].errors['minlength']">
+                                Le nom de l'inventaire doit être composé d’au minimum deux caractères.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label" for="site">Stock à inventer <span
+                                class="text-danger mx-1">*</span></label>
+                        <select name="site" id="site" formControlName="site" class="form-select">
+                            <option value="">Sélectionner un site</option>
+                            <option value="Magasin">Magasin</option>
+                            <option value="Dépot">Dépot</option>
+                        </select>
+                        <div *ngIf="f['site'].touched && f['site'].invalid" class="alert alert-danger">
+                            <div *ngIf="f['site'].errors && f['site'].errors['required']">
+                                Veuillez sélectionner un site !
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <button type="button" class="btn btn-danger" style="float: left;"
+                            data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success" style="float: right;" [disabled]="form.invalid">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal New Product -->
+<div class="modal modal-blur" id="modal-update-inventaire" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modification un produit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form [formGroup]="formUpdate" (ngSubmit)="onUpdate()" autocomplete="off" novalidate>
+                    <div class="mb-2">
+                        <label class="form-label">Nom de l'inventaire <span class="text-danger mx-1">*</span></label>
+                        <input type="text" class="form-control" placeholder="Nom de l'inventaire" formControlName="name"
+                            id="name">
+                        <div *ngIf="fUp['name'].touched && fUp['name'].invalid" class="alert alert-danger">
+                            <div *ngIf="fUp['name'].errors && fUp['name'].errors['required']">Donner un nom à
+                                l'inventaire.
+                            </div>
+                            <div *ngIf="fUp['name'].errors && fUp['name'].errors['minlength']">
+                                Le nom de l'inventaire doit être composé d’au minimum deux caractères.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label" for="site">Stock à inventer <span
+                                class="text-danger mx-1">*</span></label>
+                        <select name="site" id="site" formControlName="site" class="form-select">
+                            <option value="Magasin">Magasin</option>
+                            <option value="Dépot">Dépot</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <button type="button" class="btn btn-danger" style="float: left;"
+                            data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success" style="float: right;"
+                            [disabled]="formUpdate.invalid">
+                            Modification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alert Paiement -->
+<div class="modal modal-blur" id="modalPayInventaireProduct" data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nouvelle Fonctionnalité</h5>
+                <a type="button" class="btn-close" routerLink="/produit" data-bs-dismiss="modal" aria-label="Close"></a>
+            </div>
+            <div class="modal-body">
+                <p class="text-center"><span class="h3">** Nouvelle fonctionnalité iconeStock : Inventaire Produit !
+                        **</span> <br /></p>
+
+                <p> Avec la toute nouvelle fonctionnalité de iconeStock, Maîtrisez votre stock en temps réel, réduisez
+                    vos coûts et ne perdez plus jamais une vente à cause d’une rupture. Voici un aperçu de quelques
+                    principaux avantages :</p>
+
+                <ul>
+                    <li>📈 Gestion en temps réel des stocks :</li>
+                    <p>Obtenez un résumé précis de l'état de votre stock, incluant la quantité disponible et la quantité
+                        en alerte. Vous aurez une vue claire sur la gestion de votre
+                        inventaire à tout
+                        moment.</p>
+                    <li>🔄 Automatisation des ajustements :</li>
+                    <p>Accés à un interface configuré en cas d'inventaire. Vous pourrez ainsi
+                        ajuster la quantité en stock apres décompte.
+                    </p>
+                    <li>📦 Inventaire sur un produit :</li>
+                    <p>Cette fonctionnalité vous permet de faire un inventaire sur un produit donné !
+                    </p>
+                    <li>📦 Inventaire global :</li>
+                    <p>Cette fonctionnalité vous permet de faire un inventaire sur une catégorie de produit spécifique
+                        ou sur un ensemble de produit distincts !
+                    </p>
+                </ul>
+                <p class="text-center"><span class="h4">**Pourquoi activer cette fonctionnalité ?**</span> <br /></p>
+                <p>Débloquer cette fonctionnalité premium vous permet de suivre vos produits de manière ultra-précise,
+                    d'éviter
+                    les erreurs d'inventaire et de maximiser vos profits. Vous aurez une gestion optimisée de vos stocks
+                </p> <br />
+
+                <div class="text-center">** Débloquez dès aujourd’hui cette fonctionnalité premium pour simplifier la
+                    gestion
+                    de vos produits et
+                    booster
+                    vos performances ! **</div>
+            </div>
+            <div class="d-flex justify-content-center">
+                <a *ngIf="settingPayment?.essaie > 0" (click)="essaie()" class="btn btn-primary mb-3 mx-2">Nombre
+                    d'essaie
+                    {{settingPayment?.essaie}}</a>
+
+                <a href="https://iconestock.com/wave/{{settingPayment?.wave}}/{{reference}}/{{hostname}}"
+                    target="_blank" class="btn btn-success mb-3">Payer à
+                    {{settingPayment?.wave}} F CFA</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Inventaire -->
+<div class="modal modal-blur" id="modal-delete-inventaire" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <i class="fa fa-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
+                <h3 class="mt-3">Supprimer cet inventaire ?</h3>
+                <p class="text-muted" *ngIf="inventaireToDelete">
+                    « {{ inventaireToDelete.name }} » sera définitivement supprimé. Cette action est
+                    irréversible.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary w-100" data-bs-dismiss="modal">
+                    Annuler
+                </button>
+
+                <button type="button" class="btn btn-danger w-100" data-bs-dismiss="modal" [disabled]="isDisableDelete"
+                    (click)="confirmDelete()">
+                    <span *ngIf="!isDisableDelete">Supprimer</span>
+                    <span *ngIf="isDisableDelete" class="spinner-border spinner-border-sm mx-1"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

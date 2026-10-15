@@ -1,0 +1,419 @@
+<div class="container-fluid">
+    <app-menu-stock></app-menu-stock>
+    <div class="card-header bg-white py-1 h2 mb-3"><span class="mx-1">Détail Produit
+            {{produit.produit?.designation}}</span>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a href="#info" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+                        role="tab">Information Générale</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a href="#achat" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                        tabindex="-1">Achat</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a href="#vente" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                        tabindex="-1">Vente</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#transfert">
+                        Mouvements magasins
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane active show" id="info" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card p-3 mb-3">
+                                <h5 class="card-title badge bg-secondary mb-3 ">📦 Article
+                                    {{produit.produit?.designation}}</h5>
+                                <div class="mb-3"><strong>Prix de vente</strong> : {{produit.produit?.prix | number:
+                                    '1.0-0'}}</div>
+                                <div class="mb-3"><strong>Prix d'achat</strong> : {{produit.produit?.prix_achat |
+                                    number: '1.0-0'}}</div>
+                                <div class="mb-3"><strong>Catégorie d'article</strong> : {{produit.produit?.famille}}
+                                </div>
+                                <div class="mb-3"><strong>Référence</strong> : {{produit.produit?.ref}}</div>
+                                <div class="mb-3"><strong>Code artcile</strong> : {{produit.produit?.code}}</div>
+                                <div class="mb-3"><strong>Code barres</strong> : {{produit.produit?.code_barre}}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-3 mb-3">
+                                <h5 class="card-title badge bg-secondary mb-3">📦 Stock</h5>
+
+                                <div class="d-flex flex-column gap-2">
+                                    <div>
+                                        <div><span class="text-muted">Quantité actuellement en stock : </span>
+                                            <strong>{{produit.produit?.qty}}</strong>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted">Statut : </span>
+                                        <span class="badge me-1"
+                                            [ngClass]="getStockStatus(produit.produit?.qty, produit.produit?.qtyAlert).class">
+                                            <i class="fa"
+                                                [ngClass]="getStockStatus(produit.produit?.qty, produit.produit?.qtyAlert).icon + ' me-1'"></i>
+                                            {{ getStockStatus(produit.produit?.qty, produit.produit?.qtyAlert).label
+                                            }}
+                                        </span>
+                                    </div>
+                                    <div><span class="text-muted">Quantité en transit : </span>
+                                        <strong>{{produit.transite}}</strong>
+                                    </div>
+                                    <div><span class="text-muted">Dernier approvisionnement : </span>
+                                        <strong>({{produit.lastAchat?.qty}}) </strong>
+                                        <strong>{{ produit.lastAchat?.updated_at | date:'EEEE d MMMM y à HH:mm'
+                                            }}</strong>
+                                    </div>
+                                    <div><span class="text-muted">Quantité totale stockée depuis l'achat : </span>
+                                        <strong>{{produit.totalStock}}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card p-3 mb-3" style="width: 100%; height: 100%;">
+                                <h5 class="card-title badge bg-secondary mb-3">📦 Comptablité</h5>
+                                <as-split direction="horizontal">
+                                    <as-split-area [size]="30">
+                                        <div class="mb-3"><span class="text-muted">Prix d'achat : </span>
+                                            <strong>{{produit.produit?.prix_achat | number: '1.0-0' }}</strong>
+                                        </div>
+                                        <div class="mb-3"><span class="text-muted">Prix en détail : </span>
+                                            <strong>{{produit.produit?.prix | number: '1.0-0'}}</strong>
+                                        </div>
+                                        <div class="mb-3"><span class="text-muted">Prix en gros : </span>
+                                            <strong>{{produit.produit?.prix_gros | number: '1.0-0'}}</strong>
+                                        </div>
+                                        <div class="mb-3"><span class="text-muted">Prix en douzaine : </span>
+                                            <strong>{{produit.produit?.prix_douzaine | number: '1.0-0'}}</strong>
+                                        </div>
+                                        <div class="mb-3"><span class="text-muted">Prix en carton : </span>
+                                            <strong>{{produit.produit?.prix_carton | number: '1.0-0'}}</strong>
+                                        </div>
+                                    </as-split-area>
+                                    <as-split-area [size]="70">
+                                        <div class="mx-2">
+                                            <div class="mb-3"><span class="text-muted">Prix total d'achat : </span>
+                                                <strong>{{produit.totalAchat | number: '1.0-0'}}</strong>
+                                            </div>
+                                            <div class="mb-3"><span class="text-muted">Prix total vente : </span>
+                                                <strong>{{produit.totalVente | number: '1.0-0'}}</strong>
+                                            </div>
+                                            <div class="mb-3"><span class="text-muted">Total frais : </span>
+                                                <strong>{{produit.totalFrais | number: '1.0-0' }}</strong>
+                                            </div>
+
+                                            <div class="mb-3"><span class="text-muted">Total bénéfice : </span>
+                                                <strong>{{produit.totalBenefice | number: '1.0-0'}}</strong>
+                                            </div>
+                                        </div>
+                                    </as-split-area>
+                                </as-split>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="tab-pane" id="achat" role="tabpanel">
+                    <h4>Liste des achats {{produit.produit?.designation}}</h4>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>N° Achat</th>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Prix</th>
+                                    <th>Frais</th>
+                                    <th>Sous total</th>
+                                    <th>Date</th>
+                                    <th>Fournisseur</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr [hidden]="produit.achat.length != 0">
+                                    <td class="font-italic text-center" colspan="8">
+                                        <marquee behavior="alternate" direction="" class="h3 text-warning">Pas de
+                                            données...</marquee>
+                                    </td>
+                                </tr>
+                                <tr [hidden]="produit.achat.length == 0" *ngFor="let achat of produit.achat">
+                                    <td>{{achat.achat?.numero}}</td>
+                                    <td>{{ achat.designation }}</td>
+                                    <td>{{ achat.qty }}</td>
+                                    <td>{{ achat.prix_achat }}</td>
+                                    <td>{{ achat.frais }}</td>
+                                    <td>{{ achat.totht }}</td>
+                                    <td>{{ achat.updated_at | date:'EEEE d MMMM y à HH:mm' }}</td>
+                                    <td>{{ achat.nom_fn }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane" id="vente" role="tabpanel">
+                    <h4>Liste des ventes {{produit.produit?.designation}}</h4>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>N° Vente</th>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Prix</th>
+                                    <th>Bénéfice</th>
+                                    <th>Sous total</th>
+                                    <th>Date</th>
+                                    <th>Client</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr [hidden]="produit.vente.length != 0">
+                                    <td class="font-italic text-center" colspan="8">
+                                        <marquee behavior="alternate" direction="" class="h3 text-warning">Pas de
+                                            données...</marquee>
+                                    </td>
+                                </tr>
+                                <tr [hidden]="produit.vente.length == 0" *ngFor="let vente of produit.vente">
+                                    <td>{{vente.commande?.numero}}</td>
+                                    <td>{{ vente.produit }}</td>
+                                    <td>{{ vente.qty }}</td>
+                                    <td>{{ vente.prix }}</td>
+                                    <td>{{ vente.benefice }}</td>
+                                    <td>{{ vente.totht }}</td>
+                                    <td>{{ vente.updated_at | date:'EEEE d MMMM y à HH:mm' }}</td>
+                                    <td>{{ vente.commande?.nom_client }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane" id="transfert" role="tabpanel">
+                    <h4>Mouvements entre magasins</h4>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label>Date début</label>
+                            <input type="date" class="form-control" [(ngModel)]="dateDebut">
+                        </div>
+
+
+                        <div class="col-md-3">
+                            <label>Date fin</label>
+                            <input type="date" class="form-control" [(ngModel)]="dateFin"
+                                (change)="filtrerMouvements()">
+                        </div>
+
+                        <!--div class="col-md-2">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-primary d-block w-100" (click)="filtrerMouvements()">
+                                Filtrer
+                            </button>
+                        </div-->
+                        <div class="col-md-2">
+                            <label>&nbsp;</label>
+                            <button class="btn btn-secondary d-block w-100" (click)="resetFiltre()">
+                                Réinitialiser
+                            </button>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label>Recherche</label>
+                            <input class="form-control" [(ngModel)]="motCle" (input)="filtrerMouvements()"
+                                placeholder="N°, responsable...">
+                        </div>
+                        <div class="col-md-2">
+                            <label>Type</label>
+                            <select class="form-control" [(ngModel)]="typeFiltre" (change)="filtrerMouvements()">
+                                <option value="">Tous</option>
+                                <option value="ENTREE">Entrée</option>
+                                <option value="SORTIE">Sortie</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+
+                            <thead>
+
+                                <tr>
+                                    <th>N°</th>
+                                    <th>Mouvement</th>
+                                    <th>Type</th>
+                                    <th>Stock avant</th>
+                                    <th>Qté mouv.</th>
+                                    <th>Stock après</th>
+                                    <th>Date</th>
+                                    <th>Utilisateur</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                <tr *ngFor="let mouvement of mouvementsFiltres">
+
+
+                                    <td>
+                                        {{ mouvement.numero }}
+                                    </td>
+
+
+                                    <td>
+                                        {{ mouvement.libelle }}
+                                    </td>
+
+
+
+                                    <td>
+
+                                        <span class="badge bg-primary" *ngIf="mouvement.nature=='ENTREE'">
+
+                                            Entrée
+
+                                        </span>
+
+
+                                        <span class="badge bg-danger" *ngIf="mouvement.nature=='SORTIE'">
+
+                                            Sortie
+
+                                        </span>
+
+
+                                    </td>
+                                    <td>
+                                        <span *ngIf="mouvement.nature=='ENTREE'">
+                                            {{ mouvement.stock - mouvement.qty }}
+                                        </span>
+
+                                        <span *ngIf="mouvement.nature=='SORTIE'">
+                                            {{ mouvement.stock + mouvement.qty }}
+                                        </span>
+                                    </td>
+
+                                    <td>{{ mouvement.qty }}</td>
+
+                                    <td>
+                                        {{ mouvement.stock }}
+                                    </td>
+
+                                    <td>
+                                        {{ mouvement.created_at | date:'dd/MM/yyyy HH:mm' }}
+                                    </td>
+
+                                    <td>
+                                        {{ mouvement.responsable }}
+                                    </td>
+
+
+                                </tr>
+
+
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div class="row mb-3 pt-3">
+                        <div class="col-md-4">
+                            <div class="alert alert-primary">
+                                Entrées : {{ totalEntreesFiltrees }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="alert alert-danger">
+                                Sorties : {{ totalSortiesFiltrees }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="alert alert-warning">
+                                En transit : {{ produit.transite }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alert Paiement -->
+<div class="modal modal-blur" id="modalPayDetailProduct" data-bs-backdrop="static" data-bs-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nouvelle Fonctionnalité</h5>
+                <a type="button" class="btn-close" routerLink="/produit" data-bs-dismiss="modal" aria-label="Close"></a>
+            </div>
+            <div class="modal-body">
+                <p class="text-center"><span class="h3">** Nouvelle fonctionnalité iconeStock : Gestion complète et
+                        détaillée de
+                        vos produits
+                        ! **</span> <br /></p>
+
+                <p> Avec la toute nouvelle fonctionnalité de iconeStock, vous obtenez une **vision complète et
+                    détaillée** de
+                    chaque produit de votre inventaire, de l'achat à la vente, en passant par la gestion du stock et la
+                    comptabilité. Voici un aperçu des trois principaux avantages :</p>
+                <ul>
+                    <li>1. ** Détail complet du produit ** :</li>
+                    <p>Obtenez un résumé précis de l'état de votre stock, incluant la quantité disponible, la quantité
+                        en transit
+                        et la dernière date d'approvisionnement. Vous aurez une vue claire sur la gestion de votre
+                        inventaire à tout
+                        moment.</p>
+                    <li>2. ** Suivi des achats et des ventes ** :</li>
+                    <p>Accédez à un historique détaillé des achats et des ventes de chaque produit. Vous pourrez ainsi
+                        suivre
+                        l'évolution des transactions, de la quantité achetée à la quantité vendue, ainsi que les
+                        montants associés.
+                    </p>
+                    <li>3. ** Comptabilité transparente ** :</li>
+                    <p>La fonctionnalité vous permet de suivre le coût d'achat, le prix de vente, les bénéfices
+                        réalisés, et la
+                        rentabilité de chaque produit. Ce suivi vous aide à prendre des décisions éclairées pour
+                        optimiser vos
+                        marges.
+                    </p>
+                </ul>
+                <p class="text-center"><span class="h4">**Pourquoi activer cette fonctionnalité ?**</span> <br /></p>
+                <p>Débloquer cette fonctionnalité premium vous permet de suivre vos produits de manière ultra-précise,
+                    d'éviter
+                    les erreurs d'inventaire et de maximiser vos profits. Vous aurez une gestion optimisée des stocks,
+                    des achats,
+                    des ventes et de la comptabilité, le tout en un seul endroit.</p> <br />
+
+                <div class="text-center">** Débloquez dès aujourd’hui cette fonctionnalité premium pour simplifier la
+                    gestion
+                    de vos produits et
+                    booster
+                    vos performances ! **</div>
+            </div>
+
+            <div class="d-flex justify-content-center">
+                <a *ngIf="settingPayment?.essaie > 0" (click)="essaie()" class="btn btn-primary mb-3 mx-2">Nombre
+                    d'essaie
+                    {{settingPayment?.essaie}}</a>
+                <a href="https://iconestock.com/wave/{{settingPayment?.wave}}/{{reference}}/{{hostname}}"
+                    target="_blank" class="btn btn-success mb-3">Payer à
+                    {{settingPayment?.wave}} F CFA</a>
+            </div>
+
+        </div>
+    </div>
+</div>

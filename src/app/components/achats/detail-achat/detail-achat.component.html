@@ -1,0 +1,376 @@
+<div class="card bg-transparent border-none mb-2 container-fluid">
+    <div class="btn-group mb-2 mt-2 table-responsive" role="group">
+        <button type="button" (click)="printAchat(achat)"
+            class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4">Facture</span>
+        </button>
+
+        <button [disabled]="!isLastAchat"
+            *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifer achat Achat')" type="button"
+            (click)="editAchat(achat)" class="btn btn-outline-grey alert alert-grey btn-sm mx-3">
+            <span class="h4">Modifier</span>
+        </button>
+
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer achat Achat')" type="button"
+            (click)="openModalDeleteAchat(achat.id)" data-bs-toggle="modal" data-bs-target="#modalDeleteAchat"
+            class="btn btn-outline-danger alert alert-danger btn-sm mx-3"><span class="h4">Supprimer</span>
+        </button>
+        <button [disabled]="!isLastAchat"
+            *ngIf="userService.checkPermissionExistence(firstRoleName+ ' annuler achat Achat')" type="button"
+            (click)="openModalCancelAchat(achat.id)" data-bs-toggle="modal" data-bs-target="#modalCancelAchat"
+            class="btn btn-outline-danger alert alert-danger  btn-sm mx-3"><span class="h4">Annuler</span>
+        </button>
+    </div>
+</div>
+
+<div class="card container-fluid mb-2 table-responsive pb-3">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler une facture Achat')">
+                    <a href="#reglement" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+                        role="tab">Réglement</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler une facture Achat')">
+                    <a href="#remboursement" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                        tabindex="-1">Remboursement</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler une facture Achat')">
+                    <a href="#reduction" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                        tabindex="-1">Réduction</a>
+                </li>
+
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane active show" id="reglement" role="tabpanel"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler une facture Achat')">
+                    <div class="input-group">
+                        <!-- Reglement  -->
+                        <span class="input-group-text">Encaissement</span>
+                        <input autofocus [disabled]="!achat.restant" (keyup)="onVerser()" [(ngModel)]="verser"
+                            name="verser" type="number" class="form-control" />
+                        <span class="input-group-text">la monnaie</span>
+                        <input readonly [(ngModel)]="monnaie" name="monnaie" type="number" class="form-control bg-light"
+                            placeholder="la monnaie" />
+                        <span class="input-group-text">Encaissement Avec Wave</span>
+                        <input autofocus [disabled]="!achat.restant" placeholder="Encaissement Avec Wave"
+                            [(ngModel)]="wave" name="wave" type="number" class="form-control" />
+                        <button [disabled]="!verser || disableBtn" (click)="onSubmitReglement()"
+                            class="btn btn-outline-success mx-1" type="button">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="tab-pane" id="remboursement" role="tabpanel">
+                    <div class="input-group">
+                        <!-- Reglement  -->
+                        <span class="input-group-text">Montant Rembourser</span>
+                        <input autofocus [disabled]="achat.restant" (keyup)="onVerser()" [(ngModel)]="mt_remboursement"
+                            name="mt_remboursement" type="number" class="form-control" />
+                        <span class="input-group-text">Motif du remboursement</span>
+                        <input [disabled]="achat.restant" [(ngModel)]="motif" name="motif" type="text"
+                            class="form-control" />
+                        <button [disabled]="!motif && !mt_remboursement || disableBtn" (click)="onSubmitRemboursement()"
+                            class="btn btn-outline-success mx-1" type="button">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="reduction" role="tabpanel">
+                    <div class="input-group">
+                        <!-- Reduction  -->
+                        <span class="input-group-text">Réduction</span>
+                        <input [disabled]="this.reduce > this.restant && alert() || !achat.restant" [(ngModel)]="reduce"
+                            name="reduce" type="number" class="form-control" />
+
+                        <button [disabled]="!reduce || disableBtn " (click)="onSubmitReduction()"
+                            class="btn btn-outline-success mx-1" type="button">
+                            <i class="fa fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">N° Achat</label>
+                <span class="form-control bg-light">{{achat.numero}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Date Achat</label>
+                <span class="form-control bg-light">{{achat.date_achat}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Fournisseur</label>
+                <span class="form-control bg-light">{{fournisseur.name}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Tva %</label>
+                <span class="form-control bg-light">{{achat.tottva}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Auteur</label>
+                <span class="form-control bg-light">{{achat.auteur}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="card h3 text-center">Liste Produits</div>
+                    <div class="table-responsive border mb-3">
+                        <div style="overflow-y:scroll;max-height:250px;" id="pdfTable" #pdftable="">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Produit</th>
+                                        <th scope="col">Prix d'achat</th>
+                                        <th scope="col">Frais</th>
+                                        <th scope="col">Prix de revient</th>
+                                        <th scope="col">Qty</th>
+                                        <th scope="col">Sous Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let ligne of this.ligneAchatService.listLigneAchat ;let i = index;">
+                                        <td>{{ligne.designation}}</td>
+                                        <td>{{ligne.prix_achat | number: '1.0-0'}}</td>
+                                        <td>{{ligne.frais | number: '1.0-0'}}</td>
+                                        <td>{{ligne.prix_revient | number: '1.0-0'}}</td>
+                                        <td>{{ligne.qty}}</td>
+                                        <td>{{ligne.totht | number: '1.0-0'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card h3 text-center">Liste Réglements</div>
+                    <div class="table-responsive border mb-3">
+                        <div style="overflow-y:scroll;max-height:250px;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Net</th>
+                                        <th scope="col">Avance</th>
+                                        <th scope="col">Restant</th>
+                                        <th scope="col">
+                                            <a href="javascript:void(0)" class="btn btn-warning"
+                                                (click)="downloadFactReg(achat)"
+                                                *ngIf="this.ligneReglementAchatService.listLigneReglementAchat.length > 0">
+                                                <i class="fa fa-print"></i>
+                                            </a>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let ligne of this.ligneReglementAchatService.listLigneReglementAchat ;let i = index;"
+                                        [ngStyle]="ligne.isDelete == 1 ? {'text-decoration': 'line-through'} : {}"
+                                        [ngClass]="{'alert alert-danger': ligne.isDelete == 1}">
+                                        <td>{{ligne.created_at | date:"d-MM-y à H:s"}}</td>
+                                        <td>{{ligne.net | number: '1.0-0'}}</td>
+                                        <td>{{ligne.avance | number: '1.0-0'}}</td>
+                                        <td colspan="2">{{ligne.restant | number: '1.0-0'}}</td>
+                                        <td>
+                                            <i [hidden]="ligne.isDelete == 1"
+                                                class="btn btn-sm mx-1 text-danger btn fa fa-trash"
+                                                (click)="deleteLigneReglement(ligne.id)">
+                                            </i>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row p-3">
+            <!-- Liste  -->
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total HT</label>
+                    <span class="form-control bg-light">{{achat.totht | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total Frais</label>
+                    <span class="form-control bg-light">{{achat.totalFrais | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total TTC</label>
+                    <span class="form-control bg-light">{{achat.totttc | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Reduction</label>
+                    <span class="form-control bg-light">{{achat.reduction | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Net à payer</label>
+                    <span class="form-control bg-light">{{achat.net | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Versement</label>
+                    <span class="form-control bg-light">{{achat.versement | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Restant</label>
+                    <span class="form-control bg-light">{{achat.restant | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Delete achat -->
+    <div class="modal modal-blur" id="modalDeleteAchat" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-body text-center py-4">
+                    <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 9v2m0 4v.01" />
+                        <path
+                            d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                    </svg>
+                    <h3>Êtes-vous sûr ?</h3>
+                    <div class="text-muted">
+                        de vraiment vouloir supprimer la achat ? Ce que vous avez fait ne peut être annulé !
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                            </div>
+                            <div class="col">
+                                <a href="javascript:void(0)" (click)="deleteAchat()" class="btn btn-danger w-100"
+                                    data-bs-dismiss="modal">
+                                    OUI
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cancel achat -->
+    <div class="modal modal-blur" id="modalCancelAchat" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-body text-center py-4">
+                    <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 9v2m0 4v.01" />
+                        <path
+                            d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                    </svg>
+                    <h3>Êtes-vous sûr ?</h3>
+                    <div class="text-muted">
+                        de vraiment vouloir annuler la achat ? Ce que vous avez fait ne peut être annulé !
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                            </div>
+                            <div class="col">
+                                <a href="javascript:void(0)" (click)="cancelAchat()" class="btn btn-danger w-100"
+                                    data-bs-dismiss="modal">
+                                    OUI
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Alert Delete Last Ligne achat-->
+    <div class="modal modal-blur" id="modalAlertLine" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-body text-center py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 9v2m0 4v.01" />
+                        <path
+                            d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                    </svg>
+                    <h3>Attention !</h3>
+                    <div class="text-muted">
+                        Ajoutez un produit avant de supprimer la dernière ligne ou bien supprimer la commamde !
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

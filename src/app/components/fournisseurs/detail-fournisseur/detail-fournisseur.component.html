@@ -1,0 +1,615 @@
+<div class="page-header d-print-none bg-white">
+    <div class="container-fluid">
+        <div class="row ng-2 align-items-center">
+            <div class="col-md-11">
+                <!-- Page pre-title -->
+                <h2 class="page-title">
+                    Détails {{fournisseur.name}}
+                </h2>
+            </div>
+            <div class="col-md">
+                <button
+                    *ngIf="!fournisseur.compte && userService.checkPermissionExistence(firstRoleName+ ' créer compte fournisseur CRM')"
+                    class="btn btn-outline-success" (click)="compteClient(fournisseur)">Créer un
+                    compte</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card mt-3">
+        <div class="row bg-light">
+            <div class="col-md-4 mb-2">
+                <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">Information sur le fournisseur</span>
+                </div>
+            </div>
+            <div class="col-md-8 mb-2">
+                <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">Information Compte</span></div>
+            </div>
+        </div>
+        <div class="row g-0">
+            <div class="col-md-4 p-3 border">
+                <div class="card-body">
+                    <form [formGroup]="this.formUpdate" (ngSubmit)="onUpdate()">
+                        <h3 class="card-title">Profile Details {{ fournisseur.code }}</h3>
+                        <div class="row mb-2">
+                            <div class="col-md-3">
+                                <div class="row align-items-center mb-3">
+                                    <input type="file" accept="image/*" class="d-none" (change)="onSelectFile($event)"
+                                        id="file">
+                                    <span *ngIf="fournisseur.image" (click)="onSelect()"
+                                        class="btn avatar avatar-xl rounded"
+                                        style="background-image: url('{{fournisseur.image}}')">
+                                    </span>
+                                    <span *ngIf="!fournisseur.image" (click)="onSelect()"
+                                        class="btn avatar avatar-xl rounded"
+                                        style="background-image: url('/assets/img/avatar.png')"></span>
+                                    <small style="font-size: x-small;">Cliquer pour modifier</small>
+                                </div>
+                            </div>
+                            <div class="col-md">
+                                <div class="mb-2">
+                                    <div class="card-title">Prénom & Nom</div>
+                                    <input type="text" class="form-control" formControlName="name" id="name"
+                                        [readonly]="fournisseur.id == 1">
+                                </div>
+                                <div class="mb-2">
+                                    <div class="card-title">Surnom</div>
+                                    <input type="text" class="form-control" formControlName="surnom" id="surnom"
+                                        [readonly]="fournisseur.id == 1">
+                                </div>
+                                <div class="mb-2">
+                                    <h3 class="card-title">Adresse Email</h3>
+                                    <input type="text" placeholder="fournisseur@fournisseur.com" class="form-control"
+                                        formControlName="email" id="email">
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md">
+                                <div class="card-title">Adresse</div>
+                                <input placeholder="adresse fournisseur" type="text" class="form-control"
+                                    formControlName="address" id="address">
+                            </div>
+                            <div class="col-md">
+                                <h3 class="card-title">Téléphone</h3>
+                                <input type="text" class="form-control" placeholder="+221XXXXXXXXX"
+                                    formControlName="phone" id="phone">
+                            </div>
+                        </div>
+                        <div class=" mb-3 mt-3">
+                            <span hidden class="float-start"
+                                *ngIf="fournisseur.id != 1 && userService.checkPermissionExistence(firstRoleName+ ' supprimer fournisseur CRM')">
+                                <button data-bs-toggle="modal" data-bs-target="#modal-danger" type="button"
+                                    class="btn btn-danger">Supprimer</button>
+                            </span>
+                            <span class="float-end">
+                                <button
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier fournisseur CRM')"
+                                    [disabled]="!formUpdate.valid" type="submit" class="btn btn-primary">Mettre à
+                                    jour</button>
+                            </span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-md" *ngIf="fournisseur.compte">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a href="#versement" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+                                    role="tab">Versement</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a href="#retrait" class="nav-link" data-bs-toggle="tab" aria-selected="false"
+                                    role="tab" tabindex="-1">Retrait</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <div class="tab-pane active show" id="versement" role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Versements</h3>
+                                        <span class="input-group" *ngIf="!retrait">
+                                            <!-- Versement  -->
+                                            <input autofocus [(ngModel)]="versement" name="versement" type="number"
+                                                class="form-control mx-2" placeholder="somme" />
+                                            <input [(ngModel)]="description" name="description" type="text"
+                                                class="form-control mx-2" placeholder="description" />
+
+                                            <button
+                                                *ngIf="userService.checkPermissionExistence(firstRoleName+ ' verser compte Compte')"
+                                                [disabled]="!versement || !description" (click)="submitVersement()"
+                                                class="btn btn-outline-success mx-1" type="button"> <i
+                                                    class="fa fa-check"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive" style="height: 300px;">
+                                            <table class="table card-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date Encaisement</th>
+                                                        <th>Heure</th>
+                                                        <th>Versement</th>
+                                                        <th>Description</th>
+                                                        <th>Option</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let versement of fournisseur.compte.versements">
+                                                        <td>{{versement.created_at | date:"d-M-y"}}</td>
+                                                        <td>{{versement.created_at | date:"H:mm"}}</td>
+                                                        <td>{{versement.montant | number: '1.0-0'}}</td>
+                                                        <td>{{versement.desc}}</td>
+                                                        <td>
+                                                            <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer versement compte Compte')"
+                                                                class="btn btn-sm text-danger mx-2"
+                                                                (click)="deteteVersement(versement.id)">
+                                                                <i class="fa fa-trash"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="retrait" role="tabpanel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Retraits</h3>
+                                        <span class="input-group" *ngIf="!versement">
+                                            <!-- Versement  -->
+                                            <input [(ngModel)]="retrait" name="retrait" type="number"
+                                                class="form-control mx-2" placeholder="somme" />
+                                            <input [(ngModel)]="description" name="description" type="text"
+                                                class="form-control mx-2" placeholder="description" />
+
+                                            <button
+                                                *ngIf="userService.checkPermissionExistence(firstRoleName+ ' retirer compte Compte')"
+                                                [disabled]="!retrait || !description" (click)="submitRetrait()"
+                                                class="btn btn-outline-success mx-1" type="button"> <i
+                                                    class="fa fa-check"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive" style="height: 300px;">
+                                            <table class="table card-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date Décaisement</th>
+                                                        <th>Heure</th>
+                                                        <th>Retrait</th>
+                                                        <th>Description</th>
+                                                        <th>Option</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr *ngFor="let retrait of fournisseur.compte.retraits">
+                                                        <td>{{retrait.created_at | date:"d-M-y"}}</td>
+                                                        <td>{{retrait.created_at | date:"H:mm"}}</td>
+                                                        <td>{{retrait.montant | number: '1.0-0'}}</td>
+                                                        <td>{{retrait.desc}}</td>
+                                                        <td>
+                                                            <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer retrait compte Compte')"
+                                                                class="btn btn-sm text-danger mx-2"
+                                                                (click)="deteteRetrait(retrait.id)">
+                                                                <i class="fa fa-trash"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-4">
+                                Motant Verser : <span>{{calculateTotalVersements(fournisseur.compte.versements) |
+                                    number: '1.0-0'}} F CFA</span>
+                            </div>
+                            <div class="col-md-4">
+                                Motant Retirer : <span>{{calculateTotalRetraits(fournisseur.compte.retraits) | number:
+                                    '1.0-0'}} F CFA</span>
+                            </div>
+                            <div class="col-md-4">
+                                Motant Total : <span>{{fournisseur.compte.sold | number: '1.0-0'}} F CFA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mt-1" *ngIf="fournisseur.id != 1">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">La liste de ses bon d'Achats</span></div>
+            <div class="card table-responsive border mb-3">
+                <table class="table card-table ">
+                    <thead>
+                        <tr>
+                            <th>Numéro</th>
+                            <th>Date</th>
+                            <th>Fournisseur</th>
+                            <th>Total H</th>
+                            <th>Total tt</th>
+                            <th>Net à payer </th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="this.listBonAchat?.length == 0">
+                            <td class="font-italic text-center" colspan="8">
+                                <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                    Aucun bon d'achat éffectuée pour le moment...
+                                </marquee>
+                            </td>
+                        </tr>
+                        <tr
+                            *ngFor="let bonAchat of this.listBonAchat | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrBon } ">
+                            <td>{{bonAchat.numero}}</td>
+                            <td>{{bonAchat.date_achat}}</td>
+                            <td>{{bonAchat.nom_fn}}</td>
+                            <td>{{bonAchat.totht | number: '1.0-0'}} F CFA</td>
+                            <td>{{bonAchat.totttc | number: '1.0-0'}} F CFA</td>
+                            <td>{{bonAchat.net | number: '1.0-0'}} F CFA</td>
+                            <td>
+                                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifer bon achat Achat')"
+                                    (click)="editBonAchat(bonAchat)" class="btn btn-sm btn-outline-warning mx-1"><i
+                                        class="fa fa-edit"></i></a>
+                                <a (click)="detailBonAchat(bonAchat)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                        class="fa fa-eye"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer d-flex align-items-center mb-3">
+                <p class="m-0 text-muted">Affichage
+                    <a href="#" data-bs-toggle="offcanvas" href="#offcanvasBon" role="button"
+                        aria-controls="offcanvasTop">
+                        Afficher toutes ses bon d'achat
+                    </a>
+                    <span *ngIf="page == 1">{{defaultItem}}</span>
+                    <span *ngIf="page != 1 && page != nbrPageBonAchat">{{defaultItem * page}}</span>
+                    <span *ngIf="page != 1 && page == nbrPageBonAchat">{{nbrBon}}</span>
+                    sur <span>{{nbrBon}}</span> Bon d'achat
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">La liste de ses Achat</span></div>
+            <div class="card table-responsive border mb-3">
+                <table class="table card-table ">
+                    <thead>
+                        <tr>
+                            <th>Numéro</th>
+                            <th>Date</th>
+                            <th>Fournisseur</th>
+                            <th>Total H</th>
+                            <th>Total tt</th>
+                            <th>Net à payer </th>
+                            <th>Versement </th>
+                            <th>Restant </th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="this.listAchats?.length == 0">
+                            <td class="font-italic text-center" colspan="8">
+                                <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                    Aucun achat éffectuée pour le moment...
+                                </marquee>
+                            </td>
+                        </tr>
+                        <tr
+                            *ngFor="let achat of this.listAchats | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrAchat } ">
+                            <td>{{achat.numero}}</td>
+                            <td>{{achat.date_achat}}</td>
+                            <td>{{achat.nom_fn}}</td>
+                            <td>{{achat.totht | number: '1.0-0'}} F CFA</td>
+                            <td>{{achat.totttc | number: '1.0-0'}} F CFA</td>
+                            <td>{{achat.net | number: '1.0-0'}} F CFA</td>
+                            <td>{{achat.versement | number: '1.0-0'}} F CFA</td>
+                            <td>{{achat.restant | number: '1.0-0'}} F CFA</td>
+                            <td>
+                                <span *ngIf="achat.restant == 0" class="badge bg-success me-1">Payé</span>
+                                <span *ngIf="achat.versement != 0 && achat.restant != 0"
+                                    class="badge bg-warning me-1">En Cours</span>
+                                <span *ngIf="achat.versement == 0 && achat.restant != 0"
+                                    class="badge bg-danger me-1">Non Payé</span>
+                            </td>
+                            <td>
+                                <a (click)="detailAchat(achat)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                        class="fa fa-eye"></i></a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer d-flex align-items-center mb-3">
+                <p class="m-0 text-muted">Affichage
+                    <a href="#" data-bs-toggle="offcanvas" href="#offcanvasFacture" role="button"
+                        aria-controls="offcanvasTop">
+                        Afficher toutes ses factures d'achat
+                    </a>
+                    <span *ngIf="page == 1">{{defaultItem}}</span>
+                    <span *ngIf="page != 1 && page != nbrPageAchat">{{defaultItem * page}}</span>
+                    <span *ngIf="page != 1 && page == nbrPageAchat">{{nbrAchat}}</span>
+                    sur <span>{{nbrAchat}}</span> Factures
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container-fluid mb-2 table-responsive pb-3"
+        *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler fournisseur CRM')">
+        <div class="row">
+            <fieldset class="card col-12 mb-2" [hidden]="fournisseur.id == 1">
+                <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">Réglement</span></div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Encaissement</span>
+                    <input [disabled]="!(totalAchat - totalAvance)" (keyup)="onVerser()" [(ngModel)]="verser"
+                        name="verser" type="number" class="form-control" />
+                    <input readonly [(ngModel)]="monnaie" name="monnaie" type="number"
+                        class="form-control bg-light mx-2" placeholder="la monnaie" />
+                    <button [disabled]="!verser || disableBtn" (click)="onSubmitReglement()"
+                        class="btn btn-outline-success mx-2" type="button">
+                        <i class="fa fa-check"></i>
+                    </button>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="row p-3">
+            <!-- Liste  -->
+            <div class="col-md-4">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total Vente</label>
+                    <span class="form-control bg-light">{{totalAchat | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total Avance</label>
+                    <span class="form-control bg-light">{{totalAvance | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total Restant</label>
+                    <span class="form-control bg-light">{{totalRestant | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Fournisseur -->
+<div class="modal modal-blur" id="modal-danger" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    Voulez-vous vraiment supprimer ce fournisseur ? Ce que vous avez fait ne peut être annulé.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteClient(fournisseur.id)"
+                                class="btn btn-danger w-100" data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Reglement -->
+<div class="modal modal-blur" id="modalDeleteReg" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer cette ligne ? Ce que vous avez fait ne peut être annulé.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteLigneReglement()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Offcanva Facture -->
+<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasBon" aria-labelledby="offcanvasFactureLabel"
+    style="height: 500px;">
+    <div class="offcanvas-header">
+        <h2 class="offcanvas-title" id="offcanvasFactureLabel">La liste de toutes les bon d'achats de
+            {{fournisseur.name}}
+        </h2>
+        <input type="text" [(ngModel)]="inputFiltreFactureBon" placeholder="Rechercher une facture par numéro"
+            class="form-control float-end w-75" />
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="card table-responsive border mb-3">
+        <table class="table card-table">
+            <thead>
+                <tr>
+                    <th>Numéro</th>
+                    <th>Date</th>
+                    <th>Fournisseur</th>
+                    <th>Total H</th>
+                    <th>Total tt</th>
+                    <th>Net à payer </th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngIf="this.getFiltreFactureBon.length == 0">
+                    <td class="font-italic text-center" colspan="8">
+                        <marquee behavior="alternate" direction="" class="h3 text-warning">
+                            Aucun bon d'achat éffectuée pour le moment...
+                        </marquee>
+                    </td>
+                </tr>
+                <tr *ngFor="let achat of this.getFiltreFactureBon">
+                    <td>{{achat.numero}}</td>
+                    <td>{{achat.date_achat}}</td>
+                    <td>{{achat.nom_fn}}</td>
+                    <td>{{achat.totht | number: '1.0-0'}} F CFA</td>
+                    <td>{{achat.totttc | number: '1.0-0'}} F CFA</td>
+                    <td>{{achat.net | number: '1.0-0'}} F CFA</td>
+                    <td>
+                        <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifer bon achat Achat')"
+                            (click)="editBonAchat(achat)" class="btn btn-sm btn-outline-warning mx-1"><i
+                                class="fa fa-edit"></i></a>
+                        <a (click)="detail(achat)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                class="fa fa-eye"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<!-- Offcanva Facture -->
+<div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasFacture" aria-labelledby="offcanvasFactureLabel"
+    style="height: 500px;">
+    <div class="offcanvas-header">
+        <h2 class="offcanvas-title" id="offcanvasFactureLabel">La liste de toutes les factures achats de
+            {{fournisseur.name}}
+        </h2>
+        <input type="text" [(ngModel)]="inputFiltreFacture" placeholder="Rechercher une facture par numéro"
+            class="form-control float-end w-75" />
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="card table-responsive border mb-3">
+        <table class="table card-table">
+            <thead>
+                <tr>
+                    <th>Numéro</th>
+                    <th>Date</th>
+                    <th>Fournisseur</th>
+                    <th>Total H</th>
+                    <th>Total tt</th>
+                    <th>Net à payer </th>
+                    <th>Versement </th>
+                    <th>Restant </th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngIf="getFiltreFacture?.length == 0">
+                    <td class="font-italic text-center" colspan="8">
+                        <marquee behavior="alternate" direction="" class="h3 text-warning">
+                            Aucun achat éffectuée pour le moment...
+                        </marquee>
+                    </td>
+                </tr>
+                <tr *ngFor="let achat of this.getFiltreFacture">
+                    <td>{{achat.numero}}</td>
+                    <td>{{achat.date_achat}}</td>
+                    <td>{{achat.nom_fn}}</td>
+                    <td>{{achat.totht | number: '1.0-0'}} F CFA</td>
+                    <td>{{achat.totttc | number: '1.0-0'}} F CFA</td>
+                    <td>{{achat.net | number: '1.0-0'}} F CFA</td>
+                    <td>{{achat.versement | number: '1.0-0'}} F CFA</td>
+                    <td>{{achat.restant | number: '1.0-0'}} F CFA</td>
+                    <td>
+                        <span *ngIf="achat.restant == 0" class="badge bg-success me-1">Payé</span>
+                        <span *ngIf="achat.versement != 0 && achat.restant != 0" class="badge bg-warning me-1">En
+                            Cours</span>
+                        <span *ngIf="achat.versement == 0 && achat.restant != 0" class="badge bg-danger me-1">Non
+                            Payé</span>
+                    </td>
+                    <td>
+                        <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifer achat Achat')"
+                            (click)="editAchat(achat)" class="btn btn-sm btn-outline-warning mx-1"><i
+                                class="fa fa-edit"></i></a>
+                        <a (click)="detail(achat)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                class="fa fa-eye"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,24 @@
+<div class="page-header d-print-none bg-white mb-3">
+    <div class="card container-fluid mb-2 table-responsive pb-3">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                    <li class="nav-item" role="presentation"
+                        *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir client CRM')">
+                        <a href="javascript:void(0)" routerLink='/client' class="nav-link"
+                            [ngClass]="{ 'active': router.url === '/client' }" data-bs-toggle="tab" aria-selected="true"
+                            role="tab">Clients</a>
+                    </li>
+
+                    <li class="nav-item" role="presentation"
+                        *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir fournisseur CRM')">
+                        <a href="javascript:void(0)" routerLink='/fournisseur' class="nav-link"
+                            [ngClass]="{ 'active': router.url === '/fournisseur' }" data-bs-toggle="tab"
+                            aria-selected="false" role="tab" tabindex="-1">Fournisseurs</a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

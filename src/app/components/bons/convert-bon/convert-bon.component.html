@@ -1,0 +1,141 @@
+<div class="container-fluid">
+    <div class="card p-2">
+
+        <!-- Liste  -->
+        <div class="row mb-2 mt-2">
+            <div class="col-md-2">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">N° Facture</label>
+                    <input value="{{commandeService.maxId}}" type="text" class="form-control bg-light" readonly>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Date Facture</label>
+                    <input type="text" [(ngModel)]="date_comm" name="date_comm" class="form-control bg-light" readonly>
+                </div>
+            </div>
+
+            <div class="col-md">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Client</label>
+                    <div class="seach-clients">
+                        <div class="form-select selected" (click)="showDropdown = !showDropdown">
+                            <ng-container *ngIf="selectedClient; else placeholder">
+                                <span>{{ selectedClient.name }}</span>
+                            </ng-container>
+                            <ng-template #placeholder>
+                                <span>Sélectionner un client...</span>
+                            </ng-template>
+                            <span class="arrow">&#9662;</span>
+                        </div>
+                        <div class="form-select showlists" *ngIf="showDropdown">
+                            <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+                            <div class="showlists-item" *ngFor="let client of filteredClient"
+                                (click)="selectClient(client); showDropdown = false" [hidden]="client.name == 'Néant'">
+                                <span>{{ client.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Liste Produit -->
+        <div class="row mb-3" style="width: 100%; height: 450px;">
+            <div class="table-scroll-container table-responsive">
+                <table class="table">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th>#</th>
+                            <th>Numéro</th>
+                            <th>Total HT</th>
+                            <th>Total TTC</th>
+                            <th>Net à payer </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="this.listBonClient.length == 0">
+                            <td class="font-italic text-center" colspan="5">
+                                <marquee behavior="alternate" direction="" class="h3 text-warning"> Sélectionner
+                                    d'abord le client...</marquee>
+                            </td>
+                        </tr>
+                        <tr *ngFor="let bon of this.listBonClient">
+                            <td>
+                                <input id="checkbox" type="checkbox" [(ngModel)]="bon.isselected" name="{{bon}}"
+                                    (change)="onchange(bon)">
+                            </td>
+                            <td>{{bon.numero}}</td>
+                            <td>{{bon.totht | number: '1.0-0'}} F CFA</td>
+                            <td>{{bon.totttc | number: '1.0-0'}} F CFA</td>
+                            <td>{{bon.net | number: '1.0-0'}} F CFA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-2 mt-2 mb-2">
+        <div class="row">
+            <!-- Details Regelement  -->
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total Ht : </label>
+                    <input type="text" class="form-control bg-light" [(ngModel)]="totht" name="totht" readonly>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total Tva :</label>
+                    <select class="form-control" (change)="getTtc()" [(ngModel)]="tottva" name="tottva">
+                        <option value="0">0.0%</option>
+                        <option value="18">18%</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total TTC : </label>
+                    <input type="text" class="form-control bg-light" [(ngModel)]="totttc" name="totttc" readonly>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Réduction : </label>
+                    <input [disabled]="this.reduction > this.totttc && alert()" type="number" class="form-control"
+                        (keyup)="getTtc()" [(ngModel)]="reduction" name="reduction">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Net à payer : </label>
+                    <input type="text" class="form-control bg-light" [(ngModel)]="net" name="net" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- button submit -->
+    <div class="row mb-1">
+        <div class="mb-1 mt-2">
+            <span class="float-start">
+                <button routerLink="/bon" type="button" class="btn btn-dark">Annuler</button>
+            </span>
+            <span class="float-end">
+                <button [disabled]="isDisable || this.listBons.length == 0" type="button"
+                    (click)="onSubmitBonCommande()" class="btn btn-success">
+                    <span *ngIf="!isDisable && !isClick">Enregistrer</span>
+                    <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+                    <span *ngIf="isDisable && isClick">Chargement...</span>
+                </button>
+            </span>
+        </div>
+    </div>
+</div>

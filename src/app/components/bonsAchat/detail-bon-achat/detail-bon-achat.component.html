@@ -1,0 +1,219 @@
+<div class="card bg-transparent border-none mb-2 container-fluid">
+    <div class="btn-group mb-2 mt-2 table-responsive" role="group">
+        <button type="button" (click)="printAchat(achat)"
+            class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4">Facture</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifer bon achat Achat')" type="button"
+            (click)="editAchat(achat)" class="btn btn-outline-grey alert alert-grey btn-sm mx-3"><span
+                class="h4">Modifier</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' convertir bon achat Achat')" type="button"
+            (click)="convertBonAchat(achat.id)" data-bs-toggle="modal" data-bs-target="#modalConvertBonAchat"
+            class="btn btn-outline-success alert alert-success btn-sm mx-3"><span class="h4">convertir en Achat</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer bon achat Achat')" type="button"
+            (click)="openModalDeleteAchat(achat.id)" data-bs-toggle="modal" data-bs-target="#modalDeleteAchat"
+            class="btn btn-outline-danger alert alert-danger btn-sm mx-3"><span class="h4">Supprimer</span>
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">N° Achat</label>
+                <span class="form-control bg-light">{{achat.numero}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Date Achat</label>
+                <span class="form-control bg-light">{{achat.date_achat}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Fournisseur</label>
+                <span class="form-control bg-light">{{fournisseur.name}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Tva %</label>
+                <span class="form-control bg-light">{{achat.tottva}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Auteur</label>
+                <span class="form-control bg-light">{{achat.auteur}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="card h3 text-center">Liste Produits</div>
+            <div class="table-responsive border mb-3">
+                <div style="overflow-y:scroll;max-height:250px;" id="pdfTable" #pdftable="">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Produit</th>
+                                <th scope="col">Prix d'achat</th>
+                                <th scope="col">Frais</th>
+                                <th scope="col">Prix de revient</th>
+                                <th scope="col">Qty</th>
+                                <th scope="col">Sous Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let ligne of this.ligneAchatService.listLigneBonAchat ;let i = index;">
+                                <td>{{ligne.designation}}</td>
+                                <td>{{ligne.prix_achat | number: '1.0-0'}}</td>
+                                <td>{{ligne.frais | number: '1.0-0'}}</td>
+                                <td>{{ligne.prix_revient | number: '1.0-0'}}</td>
+                                <td>{{ligne.qty}}</td>
+                                <td>{{ligne.totht | number: '1.0-0'}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row p-3">
+            <!-- Liste  -->
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total HT</label>
+                    <span class="form-control bg-light">{{achat.totht | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total Frais</label>
+                    <span class="form-control bg-light">{{achat.totalFrais | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Total TTC</label>
+                    <span class="form-control bg-light">{{achat.totttc | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Reduction</label>
+                    <span class="form-control bg-light">{{achat.reduction | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Net à payer</label>
+                    <span class="form-control bg-light">{{achat.net | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Versement</label>
+                    <span class="form-control bg-light">{{achat.versement | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Restant</label>
+                    <span class="form-control bg-light">{{achat.restant | number: '1.0-0'}} F CFA</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Delete achat -->
+    <div class="modal modal-blur" id="modalDeleteAchat" data-backdrop="static" data-keyboard="false" tabindex="-1"
+        aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-danger"></div>
+                <div class="modal-body text-center py-4">
+                    <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 9v2m0 4v.01" />
+                        <path
+                            d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                    </svg>
+                    <h3>Êtes-vous sûr ?</h3>
+                    <div class="text-muted">
+                        de vraiment vouloir supprimer cet achat ? Ce que vous avez fait ne peut être annulé !
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                            </div>
+                            <div class="col">
+                                <a href="javascript:void(0)" (click)="deleteAchat()" class="btn btn-danger w-100"
+                                    data-bs-dismiss="modal">
+                                    OUI
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirm Convert Devis To Cammande -->
+    <div class="modal modal-blur" id="modalConvertBonAchat" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-success"></div>
+                <div class="modal-body text-center py-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-green icon-lg" width="24" height="24"
+                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                        <path d="M9 12l2 2l4 -4" />
+                    </svg>
+                    <h3>Êtes-vous sûr ?</h3>
+                    <div class="text-muted">
+                        de vraiment vouloir convertir ce bon d'achat en achat ? Ce que vous faites ne peut être annulé !
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="w-100">
+                        <div class="row">
+                            <div class="col">
+                                <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                            </div>
+                            <div class="col">
+                                <a href="javascript:void(0)" (click)="setBonAchatToAchat()"
+                                    class="btn btn-success w-100" data-bs-dismiss="modal">OUI
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

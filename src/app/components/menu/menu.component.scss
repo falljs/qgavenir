@@ -1,0 +1,941 @@
+/* =====================================================
+   VARIABLES
+   FIX : --sidebar-width / --sidebar-collapsed-width / --topbar-height
+   ne sont PLUS redéfinies ici. Elles doivent vivre en un seul
+   endroit (le :root du stylesheet global — voir app-layout.scss)
+   car .page-wrapper est en dehors de ce composant et ne peut pas
+   lire une variable posée sur :host. Les redéfinir ici créait un
+   décalage de 10px entre la sidebar et le contenu.
+===================================================== */
+
+:host {
+  --sidebar-bg: #1e293b;
+  --sidebar-bg-dark: #0f172a;
+
+  --primary: #b36453;
+  --primary-dark: #954f41;
+  --primary-light: rgba(179, 100, 83, 0.15);
+
+  --danger: #ef4444;
+
+  --text: #ffffff;
+  --text-muted: #94a3b8;
+
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+
+/* =====================================================
+   TOPBAR
+===================================================== */
+
+.topbar {
+  position: fixed;
+  top: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 1040;
+  transition: left 0.3s ease;
+}
+
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar-title .title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+
+/* =====================================================
+   BOUTONS TOPBAR
+===================================================== */
+
+.sidebar-toggle,
+.mobile-menu-btn,
+.topbar-action {
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.sidebar-toggle:hover,
+.mobile-menu-btn:hover,
+.topbar-action:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+.modern-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--sidebar-bg-dark), var(--sidebar-bg));
+  z-index: 1050;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease, transform 0.3s ease;
+  overflow: hidden;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.sidebar-brand {
+  height: 90px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  width: 100%;
+  color: white;
+  overflow: hidden;
+}
+
+.brand-logo {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  background: #ffffff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.brand-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.brand-text strong {
+  font-size: 17px;
+}
+
+.brand-text small {
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+
+/* =====================================================
+   MENU
+===================================================== */
+
+.sidebar-menu {
+  flex: 1;
+  padding: 18px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+
+
+/* =====================================================
+   MENU LINK
+===================================================== */
+
+.menu-link {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  margin-bottom: 5px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.25s ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.menu-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.menu-link.active {
+  background: linear-gradient(90deg, var(--primary), rgba(179, 100, 83, 0.75));
+  color: white;
+  box-shadow: 0 8px 20px rgba(179, 100, 83, 0.25);
+}
+
+.menu-icon {
+  width: 28px;
+  min-width: 28px;
+  display: flex;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.menu-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// FIX : classe posée dans le template mais jamais stylée.
+// Icône/texte discrètement teintés de rouge au repos, pleinement
+// rouges au survol et en actif — pour signaler une action destructive
+// sans crier au repos.
+.danger-link {
+  color: #e58e88;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--danger);
+  }
+
+  &.active {
+    background: var(--danger);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+    color: white;
+  }
+}
+
+
+/* =====================================================
+   MENU PARENT
+===================================================== */
+
+.menu-parent {
+  justify-content: flex-start;
+}
+
+.menu-arrow {
+  margin-left: auto;
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+
+.menu-parent.open .menu-arrow {
+  transform: rotate(180deg);
+}
+
+
+/* =====================================================
+   SUBMENU
+===================================================== */
+
+.submenu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease, margin 0.3s ease;
+}
+
+.submenu.open {
+  max-height: 500px;
+  opacity: 1;
+  margin-bottom: 8px;
+}
+
+.submenu-link {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 20px;
+  padding: 0 14px;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.25s ease;
+}
+
+.submenu-link i {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+}
+
+.submenu-link:hover {
+  color: white;
+  padding-left: 20px;
+  border-left-color: var(--primary);
+}
+
+.submenu-link.active {
+  color: white;
+  border-left-color: var(--primary);
+  background: rgba(179, 100, 83, 0.12);
+}
+
+
+/* =====================================================
+   SECTION
+===================================================== */
+
+.menu-section {
+  margin: 25px 12px 10px;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.sidebar-footer {
+  padding: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.logout-btn {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logout-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
+
+/* =====================================================
+   MODE COLLAPSED
+===================================================== */
+
+.modern-sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.modern-sidebar.collapsed .brand-text,
+.modern-sidebar.collapsed .menu-label,
+.modern-sidebar.collapsed .menu-arrow,
+.modern-sidebar.collapsed .menu-section {
+  display: none;
+}
+
+.modern-sidebar.collapsed .menu-link {
+  justify-content: center;
+  padding: 0;
+  gap: 0;
+}
+
+.modern-sidebar.collapsed .submenu {
+  display: none;
+}
+
+.modern-sidebar.collapsed .sidebar-footer {
+  padding: 14px 10px;
+}
+
+.modern-sidebar.collapsed .logout-btn {
+  justify-content: center;
+  padding: 0;
+}
+
+
+/* =====================================================
+   USER PROFILE
+===================================================== */
+
+.user-profile {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 999px;
+}
+
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  background-color: var(--primary);
+}
+
+// FIX : l'avatar par défaut (initiale) n'avait ni taille de police
+// ni casse fixée — texte parfois écrasé ou en minuscule.
+.default-avatar {
+  font-size: 16px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.user-info strong {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.user-info small {
+  color: #64748b;
+  font-size: 12px;
+}
+
+
+/* =====================================================
+   ACTIONS RAPIDES ("Créer")
+   Bouton plein (contrairement aux icônes secondaires du header)
+   pour marquer que c'est l'action principale de la barre du haut.
+===================================================== */
+
+.quick-action-btn {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.quick-action-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.quick-action-btn__chevron {
+  font-size: 10px;
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+}
+
+.quick-action.show .quick-action-btn__chevron {
+  transform: rotate(180deg);
+}
+
+.quick-action-panel {
+  min-width: 220px;
+  border: none;
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  margin-top: 8px !important;
+}
+
+.quick-action-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #1f2937;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+
+.quick-action-item:hover {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.quick-action-item__icon {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.quick-action-item:hover .quick-action-item__icon {
+  background: var(--primary);
+  color: #fff;
+}
+
+@media (max-width: 576px) {
+
+  // Sur mobile, on garde uniquement le "+" pour laisser la place
+  // au reste de la barre (burger, notifications, profil...)
+  .quick-action-btn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .quick-action-btn__label,
+  .quick-action-btn__chevron {
+    display: none;
+  }
+}
+
+
+/* =====================================================
+   NOTIFICATIONS
+===================================================== */
+
+.notification-btn {
+  position: relative;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--danger);
+  color: white;
+  font-size: 10px;
+  border: 2px solid white;
+}
+
+.notification-dropdown {
+  width: 360px;
+  border: none;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.notification-header,
+.notification-footer {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.notification-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  gap: 14px;
+  padding: 15px 20px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s ease;
+}
+
+.notification-item:hover {
+  background: #f8fafc;
+}
+
+.notification-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.notification-content p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+// FIX : badges de statut de paiement, présents dans la version
+// d'origine mais perdus dans cette itération — utiles pour trier
+// les rappels d'un coup d'œil.
+.status-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 4px;
+  color: #fff;
+
+  &--ok {
+    background: #2fae6b;
+  }
+
+  &--warn {
+    background: #e0a92e;
+    color: #423000;
+  }
+
+  &--danger {
+    background: var(--danger);
+  }
+}
+
+.btn-link-plain {
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+
+/* =====================================================
+   OVERLAY
+===================================================== */
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1045;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+  opacity: 1;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (min-width: 992px) {
+  :host-context(.sidebar-is-collapsed) .topbar {
+    left: var(--sidebar-collapsed-width);
+  }
+}
+
+@media (max-width: 991px) {
+  .modern-sidebar {
+    width: 280px;
+    transform: translateX(-100%);
+  }
+
+  .modern-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay.show {
+    display: block;
+  }
+
+  .topbar {
+    left: 0;
+    padding: 0 15px;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .topbar-title {
+    display: none;
+  }
+
+  .user-info,
+  .user-profile>.fa {
+    display: none;
+  }
+
+  .notification-dropdown {
+    width: calc(100vw - 30px);
+    max-width: 360px;
+  }
+}
+
+@media (max-width: 576px) {
+  .topbar {
+    height: 62px;
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .topbar-action {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* NOTE : les règles de marge pour .page-wrapper / .main-content /
+   .content-wrapper ont été retirées d'ici — elles étaient scopées
+   à ce composant et ne pouvaient donc jamais s'appliquer à des
+   éléments situés en dehors de <app-menu>. Voir app-layout.scss,
+   à ajouter à ton stylesheet global (styles.scss). */
+
+
+/* =========================================
+   CALCULATRICE
+   FIX : la calculatrice utilisait le bleu Tabler (#206bc4), en
+   rupture avec l'identité bordeaux (--primary) du reste du menu.
+   Les touches opérateur/égal reprennent maintenant --primary.
+========================================= */
+
+.calculator-dropdown {
+  width: 290px !important;
+  min-width: 290px !important;
+  padding: 12px !important;
+  border: 1px solid #d9dee7 !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+  margin-top: 8px !important;
+}
+
+.dgb-calc-box {
+  width: 100%;
+}
+
+.calc-display {
+  display: block;
+  width: 100%;
+  height: 52px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  margin: 0 0 10px 0;
+  border: 1px solid #cfd6df;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #1f2937;
+  font-size: 24px;
+  font-weight: 500;
+  text-align: right;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.calc-btn {
+  appearance: none;
+  width: 100%;
+  height: 48px;
+  padding: 0;
+  border: 1px solid #e1e5eb;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.calc-btn:hover {
+  background: #eef2f7;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.calc-btn:active {
+  transform: scale(0.96);
+}
+
+.calc-btn.operator {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.calc-btn.operator:hover {
+  background: var(--primary-dark);
+}
+
+.calc-btn.danger {
+  background: #d63939;
+  border-color: #d63939;
+  color: #ffffff;
+}
+
+.calc-btn.danger:hover {
+  background: #c02f2f;
+}
+
+.calc-btn.secondary {
+  background: #667382;
+  border-color: #667382;
+  color: #ffffff;
+}
+
+.calc-btn.secondary:hover {
+  background: #56616e;
+}
+
+.calc-btn.equals {
+  grid-row: span 2;
+  height: 102px;
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.calc-btn.equals:hover {
+  background: var(--primary-dark);
+}
+
+.calc-btn.zero {
+  grid-column: span 2;
+}
+
+@media (max-width: 576px) {
+  .calculator-dropdown {
+    width: 270px !important;
+    min-width: 270px !important;
+  }
+
+  .calc-btn {
+    height: 44px;
+  }
+
+  .calc-btn.equals {
+    height: 94px;
+  }
+
+  .calc-display {
+    height: 48px;
+    font-size: 22px;
+  }
+}
+
+
+/* =====================================================
+   ACCESSIBILITÉ
+   FIX : aucun style de focus visible n'existait sur les éléments
+   interactifs (clavier / lecteurs d'écran).
+===================================================== */
+
+.menu-link:focus-visible,
+.submenu-link:focus-visible,
+.sidebar-toggle:focus-visible,
+.mobile-menu-btn:focus-visible,
+.topbar-action:focus-visible,
+.user-profile:focus-visible,
+.logout-btn:focus-visible,
+.calc-btn:focus-visible,
+.btn-link-plain:focus-visible,
+.quick-action-btn:focus-visible,
+.quick-action-item:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

@@ -1,0 +1,19 @@
+<div class="card container-fluid mb-2 table-responsive pb-3 sticky-top">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a href="javascript:void(0)" (click)="routeNotification()" class="nav-link" data-bs-toggle="tab"
+                        [ngClass]="{ 'active': router.url === '/notifications' }" aria-selected="false"
+                        role="tab">Notification</a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                    <a href="javascript:void(0)" (click)="routeDette()" class="nav-link" data-bs-toggle="tab"
+                        [ngClass]="{ 'active': router.url === '/dette' }" aria-selected="false" role="tab"
+                        tabindex="-1">Dettes</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

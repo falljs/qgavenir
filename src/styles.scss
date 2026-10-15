@@ -1,0 +1,62 @@
+/* =====================================================
+   LAYOUT GLOBAL — à placer dans styles.scss (racine de l'app)
+
+   FIX : c'est ICI, et seulement ici, que les dimensions de la
+   sidebar sont définies. menu.component.scss n'en a plus sa
+   propre copie : avant ce correctif, le composant utilisait
+   270px / 82px alors que ce fichier global utilisait 260px / 72px,
+   ce qui créait un espace vide (ou un chevauchement) de 10px
+   entre le rail et le contenu de la page.
+===================================================== */
+
+:root {
+    --sidebar-width: 270px;
+    --sidebar-collapsed-width: 82px;
+    --topbar-height: 70px;
+}
+
+/* =========================================
+   LAYOUT GLOBAL
+========================================= */
+
+.page-wrapper,
+.main-content,
+.content-wrapper {
+    margin-left: var(--sidebar-width);
+    min-height: 100vh;
+    padding-top: var(--topbar-height);
+    transition: margin-left 0.25s ease;
+}
+
+/* =========================================
+   SIDEBAR RÉDUITE
+========================================= */
+
+body.sidebar-is-collapsed .page-wrapper,
+body.sidebar-is-collapsed .main-content,
+body.sidebar-is-collapsed .content-wrapper {
+    margin-left: var(--sidebar-collapsed-width);
+}
+
+/* =========================================
+   MOBILE
+   Le composant reste toujours en pleine largeur en dessous de
+   992px (tiroir off-canvas) : le contenu ne doit jamais être
+   décalé, collapsed ou non.
+========================================= */
+
+@media (max-width: 991.98px) {
+
+    .page-wrapper,
+    .main-content,
+    .content-wrapper {
+        margin-left: 0 !important;
+        padding-top: 62px;
+    }
+
+    body.sidebar-is-collapsed .page-wrapper,
+    body.sidebar-is-collapsed .main-content,
+    body.sidebar-is-collapsed .content-wrapper {
+        margin-left: 0 !important;
+    }
+}

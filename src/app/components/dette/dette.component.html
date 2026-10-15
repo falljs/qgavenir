@@ -1,0 +1,221 @@
+<app-menu-dette></app-menu-dette>
+<div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">Liste de toutes les dettes</span>
+</div>
+<div class="card container_fluid">
+  <div class="card-body">
+    <div class="tab-content">
+      <!-- // Encaissement -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header bg-dark justify-content-center" style="height: 10px;">
+              <div class="text-white h1 mt-1">Liste des dettes</div>
+            </div>
+            <div class="card-body">
+
+              <div class="row mb-2">
+                <div class="col-md-6">
+                  <label for="client" class="form-label">Par Client</label>
+                  <div class="seach-clients">
+                    <div class="form-select selected" (click)="showDropdown = !showDropdown">
+                      <ng-container *ngIf="selectedClient; else placeholder">
+                        <span>{{ selectedClient.name }}</span>
+                      </ng-container>
+                      <ng-template #placeholder>
+                        <span>Sélectionner un client...</span>
+                      </ng-template>
+                      <span class="arrow">&#9662;</span>
+                    </div>
+                    <div class="form-select showlists" *ngIf="showDropdown">
+                      <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+                      <div class="showlists-item" *ngFor="let client of filteredClient"
+                        (click)="selectClient(client); showDropdown = false">
+                        <span>{{ client.name }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="client" class="form-label">Par Date</label>
+                  <input onfocus="(this.type='date')" (change)="onChangeDate($event.target)" name="date" type="text"
+                    class="form-control mx-1" placeholder="Par Date" />
+                </div>
+
+                <div class="col-md">
+                  <label class="form-label">Imprimer</label>
+                  <div *ngIf="print">
+                    <a href="javascript:void(0)" class="btn btn-warning" (click)="printData(nom_client)">
+                      <i class="fa fa-print"></i>
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs nav-fill" data-bs-toggle="tabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <a href="#tabs-1" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">Dette
+                      Par Commande</a>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <a href="#tabs-2" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                      tabindex="-1">Dette Par Bon</a>
+                  </li>
+                </ul>
+              </div>
+              <div class="card-body">
+                <div class="tab-content">
+
+                  <!-- Tab I -->
+                  <div class="tab-pane active show" id="tabs-1" role="tabpanel">
+
+
+                    <div class="card mb-2">
+                      <div class="row p-3">
+                        <div class="table-responsive border mb-3" style="height: 530px;">
+                          <table class="table table-striped-columns  table-vcenter text-nowrap">
+                            <thead class="sticky-top ">
+                              <tr>
+                                <th>Numéro</th>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Net à payer </th>
+                                <th>Restant</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngIf="this.nbrDivers == 0">
+                                <td class="font-italic text-center" colspan="7">
+                                  <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                    Aucune donnée disponible pour le moment...
+                                  </marquee>
+                                </td>
+                              </tr>
+                              <tr
+                                *ngFor="let diver of this.commandeService.listDette | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrDivers }"
+                                (click)="detail(diver)">
+                                <td>{{diver.numero}}</td>
+                                <td>{{diver.created_at | date: 'dd-MM-yyyy H:mm'}}</td>
+                                <td>{{diver.nom_client}}</td>
+                                <td>{{diver.net | number: '1.0-0'}} F CFA</td>
+                                <td>{{diver.restant | number: '1.0-0'}} F CFA</td>
+
+                                <td>
+                                  <span *ngIf="diver.restant == 0" class="badge bg-success me-1">Payé</span>
+                                  <span *ngIf="diver.versement != 0 && diver.restant != 0"
+                                    class="badge bg-warning me-1">En Cours</span>
+                                  <span *ngIf="diver.versement == 0 && diver.restant != 0"
+                                    class="badge bg-danger me-1">Non Payé</span>
+                                </td>
+
+                                <td>
+                                  <a hidden (click)="editDiver(diver)" class="btn btn-sm  btn-outline-warning mx-1"><i
+                                      class="fa fa-edit"></i></a>
+                                  <a (click)="detail(diver)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                      class="fa fa-eye"></i></a>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="card-footer d-flex align-items-center" *ngIf="this.nbrDivers > 100"
+                          style="height: 40px;">
+                          <p class="m-0 text-muted">Affichage
+                            <span *ngIf="page == 1">{{defaultItem}}</span>
+                            <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                            <span *ngIf="page != 1 && page == nbrPage">{{nbrDvs}}</span>
+                            sur <span>{{nbrDvs}}</span> Devis
+                          </p>
+                          <ul class="pagination m-0 ms-auto mt-3">
+                            <pagination-controls (pageChange)="page = $event" previousLabel="Précédent"
+                              nextLabel="Suivant">
+                            </pagination-controls>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <!-- Tab II -->
+                  <div class="tab-pane" id="tabs-2" role="tabpanel">
+
+                    <div class="card mb-2">
+                      <div class="row p-3">
+                        <div class="table-responsive border mb-3" style="height: 530px;">
+                          <table class="table table-striped-columns  table-vcenter text-nowrap">
+                            <thead class="sticky-top ">
+                              <tr>
+                                <th>Numéro</th>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Net à payer </th>
+                                <th>Status</th>
+                                <th>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngIf="this.nbrBon == 0">
+                                <td class="font-italic text-center" colspan="7">
+                                  <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                    Aucune donnée disponible pour le moment...
+                                  </marquee>
+                                </td>
+                              </tr>
+                              <tr
+                                *ngFor="let diver of this.commandeService.listDetteBon | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrDivers }"
+                                (click)="detail(diver)">
+                                <td>{{diver.numero}}</td>
+                                <td>{{diver.created_at | date: 'dd-MM-yyyy H:mm'}}</td>
+                                <td>{{diver.nom_client}}</td>
+                                <td>{{diver.net | number: '1.0-0'}} F CFA</td>
+
+                                <td>
+                                  <span *ngIf="diver.net > 0" class="badge bg-danger me-1">Non Payé</span>
+                                </td>
+
+                                <td>
+                                  <a hidden (click)="editDiver(diver)" class="btn btn-sm  btn-outline-warning mx-1"><i
+                                      class="fa fa-edit"></i></a>
+                                  <a (click)="detail(diver)" class="btn btn-sm btn-outline-primary mx-1"><i
+                                      class="fa fa-eye"></i></a>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div class="card-footer d-flex align-items-center" *ngIf="this.nbrDivers > 100"
+                          style="height: 40px;">
+                          <p class="m-0 text-muted">Affichage
+                            <span *ngIf="page == 1">{{defaultItem}}</span>
+                            <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                            <span *ngIf="page != 1 && page == nbrPage">{{nbrDvs}}</span>
+                            sur <span>{{nbrDvs}}</span> Devis
+                          </p>
+                          <ul class="pagination m-0 ms-auto mt-3">
+                            <pagination-controls (pageChange)="page = $event" previousLabel="Précédent"
+                              nextLabel="Suivant">
+                            </pagination-controls>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-header"> Montant Total = {{montantTotal_dette | number: '1.0-0'}} FCFA </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

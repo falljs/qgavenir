@@ -1,0 +1,840 @@
+<div class="card container-fluid mb-1">
+    <fieldset>
+        <legend class="mx-3">Corbeilles</legend>
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-factures" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+                            role="tab">Factures</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-devis" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1"
+                            role="tab">Devis</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-bon" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1"
+                            role="tab">Bon de commande</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-facture-achat" class="nav-link" data-bs-toggle="tab" aria-selected="false"
+                            tabindex="-1" role="tab">Factures Achat</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-facture-bon-achat" class="nav-link" data-bs-toggle="tab" aria-selected="false"
+                            tabindex="-1" role="tab">Bons Achat</a>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-produit" class="nav-link" data-bs-toggle="tab" aria-selected="false"
+                            tabindex="-1" role="tab">Produits</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-mouvement" class="nav-link" data-bs-toggle="tab" aria-selected="false"
+                            tabindex="-1" role="tab">Mouvements</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-inventaire" class="nav-link" data-bs-toggle="tab" aria-selected="false"
+                            tabindex="-1" role="tab">Inventaires</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-compte" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1"
+                            role="tab">Comptes</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a href="#tabs-utilisateur" class="nav-link" data-bs-toggle="tab" aria-selected="false"
+                            tabindex="-1" role="tab">Utilisateur</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Commandes
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane active show" id="tabs-factures" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des factures supprimées</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les factures qui ont été supprimées. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="commandes?.length == 0"
+                                    (click)="viderCorbeilleCommande()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>Numéro</th>
+                                                <th>Date de suppression</th>
+                                                <th>Date de création</th>
+                                                <th>Auteur</th>
+                                                <th>Client</th>
+                                                <th>Total H</th>
+                                                <th>Total tt</th>
+                                                <th>Net à payer </th>
+                                                <th>Versement </th>
+                                                <th>Restant </th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="commandes?.length == 0">
+                                                <td class="font-italic text-center" colspan="12">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucune commande dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let commande of commandes">
+                                                <td>{{commande.numero}}</td>
+                                                <td>{{commande.deleted_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{commande.created_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{commande.auteur}}</td>
+                                                <td>{{commande.nom_client}}</td>
+                                                <td>{{commande.totht | number: '1.0-0'}} F CFA</td>
+                                                <td>{{commande.totttc | number: '1.0-0'}} F CFA</td>
+                                                <td>{{commande.net | number: '1.0-0'}} F CFA</td>
+                                                <td>{{commande.versement | number: '1.0-0'}} F CFA</td>
+                                                <td>{{commande.restant | number: '1.0-0'}} F CFA</td>
+                                                <td>
+                                                    <span *ngIf="commande.restant == 0"
+                                                        class="badge bg-success me-1">Payé</span>
+                                                    <span *ngIf="commande.versement != 0 && commande.restant != 0"
+                                                        class="badge bg-warning me-1">En
+                                                        Cours</span>
+                                                    <span *ngIf="commande.versement == 0 && commande.restant != 0"
+                                                        class="badge bg-danger me-1">Non
+                                                        Payé</span>
+                                                </td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerCommande(commande)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteCommande(commande)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Deivs
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-devis" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des devis supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les devis qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="devis?.length == 0"
+                                    (click)="viderCorbeilleDevis()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>Numéro</th>
+                                                <th>Date de suppression </th>
+                                                <th>Date de création </th>
+                                                <th>Client</th>
+                                                <th>Total H</th>
+                                                <th>Total tt</th>
+                                                <th>Net à payer </th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="devis?.length == 0">
+                                                <td class="font-italic text-center" colspan="8">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun devis disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let devi of devis">
+                                                <td>{{devi.numero}}</td>
+                                                <td>{{devi.deleted_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{devi.created_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{devi.nom_client}}</td>
+                                                <td>{{devi.totht | number: '1.0-0'}} F CFA</td>
+                                                <td>{{devi.totttc | number: '1.0-0'}} F CFA</td>
+                                                <td>{{devi.net | number: '1.0-0'}} F CFA</td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerDevis(devi)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteDevis(devi)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Bon
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-bon" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des bons supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les bons qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="bons?.length == 0"
+                                    (click)="viderCorbeilleBon()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>Numéro</th>
+                                                <th>Date de suppression </th>
+                                                <th>Date de création </th>
+                                                <th>Client</th>
+                                                <th>Total HT</th>
+                                                <th>Total TTC</th>
+                                                <th>Net à payer </th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="bons?.length == 0">
+                                                <td class="font-italic text-center" colspan="8">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun bon de commande disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let bon of bons">
+                                                <td>{{bon.numero}}</td>
+                                                <td>{{bon.deleted_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{bon.created_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{bon.nom_client}}</td>
+                                                <td>{{bon.totht | number: '1.0-0'}} F CFA</td>
+                                                <td>{{bon.totttc | number: '1.0-0'}} F CFA</td>
+                                                <td>{{bon.net | number: '1.0-0'}} F CFA</td>
+
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerBon(bon)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteBon(bon)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Achat
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-facture-achat" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des achats supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les achats qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="achats?.length == 0"
+                                    (click)="viderCorbeilleAchat()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>Numéro</th>
+                                                <th>Date de suppression </th>
+                                                <th>Date de création </th>
+                                                <th>Fournisseur</th>
+                                                <th>Total H</th>
+                                                <th>Total tt</th>
+                                                <th>Net à payer </th>
+                                                <th>Versement </th>
+                                                <th>Restant </th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="achats?.length == 0">
+                                                <td class="font-italic text-center" colspan="11">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucune achat disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let achat of achats">
+                                                <td>{{achat.numero}}</td>
+                                                <td>{{achat.deleted_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{achat.created_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{achat.nom_fn}}</td>
+                                                <td>{{achat.totht | number: '1.0-0'}} F CFA</td>
+                                                <td>{{achat.totttc | number: '1.0-0'}} F CFA</td>
+                                                <td>{{achat.net | number: '1.0-0'}} F CFA</td>
+                                                <td>{{achat.versement | number: '1.0-0'}} F CFA</td>
+                                                <td>{{achat.restant | number: '1.0-0'}} F CFA</td>
+                                                <td>
+                                                    <span *ngIf="achat.restant == 0"
+                                                        class="badge bg-success me-1">Payé</span>
+                                                    <span *ngIf="achat.versement != 0 && achat.restant != 0"
+                                                        class="badge bg-warning me-1">En Cours</span>
+                                                    <span *ngIf="achat.versement == 0 && achat.restant != 0"
+                                                        class="badge bg-danger me-1">Non Payé</span>
+                                                </td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerAchat(achat)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteAchat(achat)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Bon Achat
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-facture-bon-achat" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des bons d'achats supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les bons d'achats qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="bonAchats?.length == 0"
+                                    (click)="viderCorbeilleBonAchat()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>Numéro</th>
+                                                <th>Date de suppression </th>
+                                                <th>Date de création </th>
+                                                <th>Fournisseur</th>
+                                                <th>Total H</th>
+                                                <th>Total tt</th>
+                                                <th>Net à payer </th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="bonAchats?.length == 0">
+                                                <td class="font-italic text-center" colspan="8">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun bon d'achat disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let achatBon of bonAchats">
+                                                <td>{{achatBon.numero}}</td>
+                                                <td>{{achatBon.deleted_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{achatBon.created_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{achatBon.nom_fn}}</td>
+                                                <td>{{achatBon.totht | number: '1.0-0'}} F CFA</td>
+                                                <td>{{achatBon.totttc | number: '1.0-0'}} F CFA</td>
+                                                <td>{{achatBon.net | number: '1.0-0'}} F CFA</td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerBonAchat(achatBon)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteBonAchat(achatBon)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Produit
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-produit" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des produits supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les produits qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="produits?.length == 0"
+                                    (click)="viderCorbeilleProduit()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-1">Code</th>
+                                                <th>Désignation</th>
+                                                <th>Quantité</th>
+                                                <th>Prix d'achat</th>
+                                                <th>Prix global</th>
+                                                <th>Prix de vente</th>
+                                                <th>Prix En gros</th>
+                                                <th>Réference</th>
+                                                <th>Catégorie</th>
+                                                <th>Statut</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="produits?.length == 0">
+                                                <td class="font-italic text-center" colspan="11">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun produit disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let produit of produits">
+                                                <td><span class="text-muted">{{produit.code}}</span></td>
+                                                <td>{{produit.designation}}
+                                                </td>
+                                                <td><span *ngIf="produit.qty > produit.qtyAlert && produit.qty != 0"
+                                                        class="fa fa-database text-success"></span>
+                                                    <span *ngIf="produit.qty <= produit.qtyAlert && produit.qty != 0"
+                                                        class="fa fa-database text-warning"></span>
+                                                    <span *ngIf="produit.qty == 0"
+                                                        class="fa fa-database text-danger"></span>
+                                                    {{produit.qty}}
+                                                </td>
+                                                <td>{{produit.prix_achat | number: '1.0-0'}} F CFA</td>
+                                                <td>{{produit.prix_achat * produit.qty | number: '1.0-0'}} F CFA</td>
+                                                <td>{{produit.prix | number: '1.0-0'}} F CFA</td>
+                                                <td>{{produit.prix_gros | number: '1.0-0'}} F CFA</td>
+                                                <td>{{produit.ref}}</td>
+                                                <td>{{produit.famille}}</td>
+                                                <td><span *ngIf="produit.qty > produit.qtyAlert && produit.qty != 0"
+                                                        class="badge bg-success me-1">En
+                                                        stock</span>
+                                                    <span *ngIf="produit.qty <= produit.qtyAlert && produit.qty != 0"
+                                                        class="badge bg-warning me-1">Présque terminé</span>
+                                                    <span *ngIf="produit.qty == 0"
+                                                        class="badge bg-danger me-1">Terminé</span>
+                                                </td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerProduit(produit)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteProduit(produit)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Mouvement
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-mouvement" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des mouvements supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les mouvements qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="mouvements?.length == 0"
+                                    (click)="viderCorbeilleMouvement()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>Numéro</th>
+                                                <th>Date</th>
+                                                <th>Auteur</th>
+                                                <th>Résponsable</th>
+                                                <th>Mouvement</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="mouvements?.length == 0">
+                                                <td class="font-italic text-center" colspan="6">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun mouvement disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let mouvement of mouvements">
+                                                <td>{{mouvement.numero}}</td>
+                                                <td>{{mouvement.created_at | date:"d-MM-y à H:mm"}}</td>
+                                                <td>{{mouvement.auteur}}</td>
+                                                <td>{{mouvement.responsable}}</td>
+                                                <td>
+                                                    <span *ngIf="mouvement.type == 'Stock => Depôt'">Stock vers
+                                                        Dépôt</span>
+                                                    <span *ngIf="mouvement.type != 'Stock => Depôt'">Dépôt vers
+                                                        Stock</span>
+                                                </td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerMouvement(mouvement)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteMouvement(mouvement)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Inventaire
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-inventaire" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des inventaires supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les inventaires qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="inventaires?.length == 0"
+                                    (click)="viderCorbeilleInventaire()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-1">N°</th>
+                                                <th>Nom du site</th>
+                                                <th>Inventaire</th>
+                                                <th>Date Création</th>
+                                                <th>Dernière modification</th>
+                                                <th>Status</th>
+                                                <th>Auteur</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="inventaires?.length == 0">
+                                                <td class="font-italic text-center" colspan="8">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun inventaire disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let inventaire of inventaires">
+                                                <td><span class="text-muted">{{inventaire.numero}}</span></td>
+                                                <td>{{inventaire.site}}</td>
+                                                <td>{{inventaire.name}}</td>
+                                                <td>{{inventaire.created_at | date: 'EEEE d MMMM y à HH:mm'}}</td>
+                                                <td>{{inventaire.updated_at | date: 'EEEE d MMMM y à HH:mm'}}</td>
+                                                <td [ngClass]="{
+                                    'text-secondary': inventaire.status === 'Brouillon',
+                                    'text-warning': inventaire.status === 'En cours',
+                                    'text-success': inventaire.status === 'Terminer'
+                                    }">
+                                                    {{ inventaire.status }}
+                                                </td>
+
+                                                <td>{{inventaire.auteur}}</td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerInventaire(inventaire)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteInventaire(inventaire)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau Compte
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-compte" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des comptes supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les comptes qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="comptes?.length == 0"
+                                    (click)="viderCorbeilleCompte()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>N° de compte</th>
+                                                <th>Solde compte</th>
+                                                <th>Titulaire</th>
+                                                <th>Date de création</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="comptes?.length == 0">
+                                                <td class="font-italic text-center" colspan="5">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun compte disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let inventaire of comptes">
+                                                <td><span class="text-muted">{{compte.num}}</span></td>
+                                                <td>{{compte.sold | number: '1.0-0'}} F CFA</td>
+                                                <td>{{compte.owner}}</td>
+                                                <td>{{compte.created_at | date:"d-M-y à H:mm"}}</td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerCompte(compte)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteCompte(compte)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!------------------------------
+                    --------------------------------
+                                                   Tableau User
+                                                                -----------------------------------
+                                                                ----------------------------------->
+                    <div class="tab-pane" id="tabs-utilisateur" role="tabpanel">
+                        <div class="mb-2">
+                            <!-- Bloc explicatif et bouton -->
+                            <div
+                                class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded">
+                                <div>
+                                    <h5 class="mb-1">Corbeille des utilisateurs supprimés</h5>
+                                    <p class="mb-0 text-muted">
+                                        Cette section affiche les utilisateurs qui ont été supprimés. Vous pouvez les
+                                        restaurer ou les supprimer définitivement.
+                                    </p>
+                                </div>
+                                <button class="btn btn-danger" [disabled]="utilisateurs?.length == 0"
+                                    (click)="viderCorbeilleUser()"
+                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' vider Corbeille')">
+                                    <i class="fa fa-trash-alt me-1"></i> Vider la corbeille
+                                </button>
+                            </div>
+                            <div class="row p-3">
+                                <div class="table-responsive border mb-3" style="height: 450px;">
+                                    <table class="table table-vcenter text-nowrap datatable">
+                                        <thead>
+                                            <tr>
+                                                <td>Image</td>
+                                                <th>Prénom & Nom</th>
+                                                <th>Adresse</th>
+                                                <th>Contact</th>
+                                                <th>E-mail</th>
+                                                <th>Date de suppression</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="utilisateurs?.length == 0">
+                                                <td class="font-italic text-center" colspan="7">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucun utilisateur disponible dans le corbeille...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let user of utilisateurs">
+                                                <td>
+                                                    <span *ngIf="user.image" class="avatar me-2"
+                                                        style="background-image: url('{{userService.urlImg+user.image}}')"></span>
+                                                    <span *ngIf="!user.image" class="avatar me-2"
+                                                        style="background-image: url(/assets/img/avatar.png)"></span>
+                                                </td>
+                                                <td>{{user.prenom +' '+ user.nom}}</td>
+                                                <td>{{user.adresse}}</td>
+                                                <td>{{user.contact}}</td>
+                                                <td>{{user.email}}</td>
+                                                <td>{{user.deleted_at | date:"d-M-y à H:mm"}}</td>
+                                                <td>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' restaurer Corbeille')"
+                                                        (click)="restaurerUser(user)"
+                                                        class="btn btn-sm btn-outline-warning mx-1"><i
+                                                            class="fa fa-undo"></i></a>
+                                                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer Corbeille')"
+                                                        (click)="deleteUser(user)"
+                                                        class="btn btn-sm btn-outline-danger mx-1"><i
+                                                            class="fa fa-trash"></i></a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</div>

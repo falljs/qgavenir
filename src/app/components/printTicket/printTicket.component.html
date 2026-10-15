@@ -1,0 +1,42 @@
+<div class="body">
+  <div class="page">
+    <div class="text-center" style="font-size: 20px;">
+      <img src="https://www.qg-avenir.iconestock.com/server/public/print/logo.png" width="35%">
+      <div style="font-size:small;">
+        <i></i><span>Quincaillerie Générale</span><br>
+        <i></i><span>Vente de fer de tout genre</span><br>
+        <i></i><span>Acier, Inox, Aluminium etc...</span><br>
+        <i></i><span>Diamageune Dakar (Sénégal)</span><br>
+        <i></i><span>+221 77 753 26 76 | +221 77 860 63 48 | +221 33 854 69 69</span>
+        <div style="border-top: 0.5px dotted black;">&nbsp;</div>
+
+      </div>
+    </div>
+    <div class="text-center" style="font-weight: 600; font-size: medium;">
+      <div><i>Caisse </i>{{ticket.auteur}}</div>
+      <div><i>Ticket N° </i>{{ticket.numero}}</div>
+      <div><i>Date et l'heure: </i>{{ticket.created_at | date:"d-MM-y à H:mm"}}</div>
+      <div><i>Client : </i>{{ticket.nom_client}}</div>
+    </div>
+    <div class="mx-5">
+      <div style="font-weight: 500; font-size: 35px; text-align: center; margin-bottom: 1%;"> Ticket de caisse </div>
+      <div *ngFor="let ligne of this.listTicket; let i = index;"
+        style="padding: 2%;margin-left: 2%; margin-bottom: 2%; font-size: 15px; border: 0.2px dotted black;">
+        <span class="mx-2">{{ i+1}} => </span>
+        <span class="mx-2">{{ ligne.produit}}</span> <br>
+        <span class="mx-2">Prix : {{ ligne.prix | number: '1.0-0' }} FCFA </span>
+        <span class="mx-2">Qty : {{ ligne.qty}}</span> <br>
+        <span class="mx-2">Sous Total : {{ ligne.totht | number: '1.0-0' }} FCFA </span>
+      </div>
+      <div style="text-align: center; margin-bottom: 1%; margin-top: 1%;">
+        <span class="mx-2 h3" style="font-weight: 700; font-size: larger;">Montant Total : {{ticket.net | number:
+          '1.0-0'}} F CFA </span>
+      </div>
+    </div>
+    <div style="text-align: center; margin-bottom: 5%;">
+      Copyright &copy; {{ year }} DKI <br>
+      Merci de votre visite. A bientôt !!!
+    </div>
+    <div style="border-top: 0.5px dotted black;">&nbsp;</div>
+  </div>
+</div>

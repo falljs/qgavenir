@@ -1,0 +1,48 @@
+<div class="card container-fluid mb-2 table-responsive pb-3">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir produit Stock')">
+                    <a href="javascript:void(0)" routerLink='/produit' class="nav-link"
+                        [ngClass]="{ 'active': router.url === '/produit' }" data-bs-toggle="tab" aria-selected="true"
+                        role="tab">Produits</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir mouvement Stock')">
+                    <a href="javascript:void(0)" routerLink='/mouvement-list' class="nav-link"
+                        [ngClass]="{ 'active': router.url === '/mouvement-list' }" data-bs-toggle="tab"
+                        aria-selected="false" role="tab" tabindex="-1">Mouvements</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir depôt Stock')">
+                    <a href="javascript:void(0)" routerLink='/depot_I' class="nav-link"
+                        [ngClass]="{ 'active': router.url === '/depot_I' }" data-bs-toggle="tab" aria-selected="false"
+                        role="tab" tabindex="-1">Depôt</a>
+                </li>
+
+                <li class="nav-item" role="presentation"
+                    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir inventaire Stock')">
+                    <a href="javascript:void(0)" routerLink='/inventaires' class="nav-link"
+                        [ngClass]="{ 'active': router.url === '/inventaires' }" data-bs-toggle="tab"
+                        aria-selected="false" role="tab" tabindex="-1">Inventaires</a>
+                </li>
+
+            </ul>
+            <a *ngIf="router.url === '/produit' && userService.checkPermissionExistence(firstRoleName+ ' créer produit Stock')"
+                href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-product"
+                class="btn btn-success mx-1 w-auto">Nouveau</a>
+            <a *ngIf="router.url === '/produit' && userService.checkPermissionExistence(firstRoleName+ ' importer produit Stock')"
+                href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#import-product"
+                class="btn btn-info mx-1 w-auto">Importer <i class="fa fa-file-excel-o mx-2"></i></a>
+            <a *ngIf="router.url === '/mouvement-list' && userService.checkPermissionExistence(firstRoleName+ ' créer mouvement Stock')"
+                class="btn btn-success mx-1 w-auto" routerLink='/mouvement-new'>Nouveau
+                Mouvement</a>
+            <a *ngIf="router.url === '/inventaires' && userService.checkPermissionExistence(firstRoleName+ ' créer inventaire Stock')"
+                href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-new-inventaire"
+                class="btn btn-success mx-1 w-auto">Nouveau</a>
+        </div>
+    </div>
+</div>

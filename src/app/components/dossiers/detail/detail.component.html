@@ -1,0 +1,487 @@
+<div *ngIf="isDossier == 'client'">
+
+  <div class="page-header mb-3 bg-white">
+    <!-- Page pre-title -->
+    <div class="page-title mx-2">
+      <i class="fa fa-arrow-circle-left btn" aria-hidden="true" (click)="routeDossier()"></i>
+      <span class="mx-2 h2 mt-1">Détail Dossier client : {{dossier.nom}} / ce dossier a été
+        créé par <span class="text-nowrap text-uppercase font-weight-bold ">{{dossier.auteur}}</span> le
+        {{dossier.created_at |
+        date:"d-M-y à H:mm"}}</span>
+    </div>
+  </div>
+
+  <div class="row mb-3 container-fluid">
+    <div class="col-md-2 border-right border-dark">
+      <img width="100%" class="img-fluid w-75" src="assets/img/detail_folder_open.png" alt="" srcset="">
+    </div>
+
+    <div class="col-md">
+      <div class="mt-2">
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Nombre de factures {{nbrComm}} </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total des ventes {{totalVente | number: '1.0-0'}}
+          F CFA </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total versés {{totalPayer | number: '1.0-0'}} F
+          CFA </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total restants {{totalRestant | number: '1.0-0'}}
+          F CFA </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Total bénéfice {{beneficeCom | number: '1.0-0'}} F CFA
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md">
+      <div class="mt-2">
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Nombre de devis {{nbrDevis}} </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total des devis {{totalDevis | number: '1.0-0'}}
+          F CFA </div>
+      </div>
+    </div>
+
+    <div class="col-md">
+      <div class="mt-2">
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Nombre de bon de commandes {{nbrBon}} </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total des bons {{totalBon | number:
+          '1.0-0'}} F CFA
+        </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Total bénéfice {{beneficeBon | number: '1.0-0'}} F CFA
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a href="#tabs-facture" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+            role="tab">Factures</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a href="#tabs-devis" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1"
+            role="tab">Devis</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a href="#tabs-bon" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1" role="tab">Bon
+            de
+            commande</a>
+        </li>
+        <li class="mx-5" *ngIf="hasPhone && hasImpayes">
+          <button class="btn btn-success btn-sm" (click)="sendWhatsapp()">
+            <i class="fa fa-whatsapp me-1"></i>
+            Relancer WhatsApp
+          </button>
+        </li>
+        <li class="mx-5" *ngIf="!hasImpayes">
+          <span class="badge bg-success">
+            Toutes les factures sont réglées
+          </span>
+        </li>
+        <li class="mx-5" *ngIf="!hasPhone">
+
+          <div class="input-group">
+
+            <input class="form-control form-control-sm" [(ngModel)]="phone" placeholder="Numéro WhatsApp">
+
+            <button class="btn btn-primary btn-sm" (click)="updatePhone()">
+
+              Enregistrer
+
+            </button>
+
+          </div>
+
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="tab-content">
+        <div class="tab-pane active show" id="tabs-facture" role="tabpanel">
+          <div class="container-fluid table-responsive border mb-3" style="height: 250px;">
+            <table class="table card-table table-vcenter text-nowrap datatable">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Numéro</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Total HT</th>
+                  <th scope="col">Total TTC</th>
+                  <th scope="col">Net à Payer </th>
+                  <th scope="col">Versement </th>
+                  <th scope="col">Restant </th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="listComm?.length == 0">
+                  <td class="font-italic text-center" colspan="5">
+                    <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucune commande disponible pour
+                      {{client.name}}...</marquee>
+                  </td>
+                </tr>
+                <tr *ngFor="let commande of listComm">
+                  <td>{{commande.numero}}</td>
+                  <td>{{commande.created_at | date:"d-MM-y à H:mm"}}</td>
+                  <td>{{commande.totht | number: '1.0-0'}} F CFA</td>
+                  <td>{{commande.totttc | number: '1.0-0'}} F CFA</td>
+                  <td>{{commande.net | number: '1.0-0'}} F CFA</td>
+                  <td>{{commande.versement | number: '1.0-0'}} F CFA</td>
+                  <td>{{commande.restant | number: '1.0-0'}} F CFA</td>
+                  <td>
+                    <span *ngIf="commande.restant == 0" class="badge bg-success me-1">Payé</span>
+                    <span *ngIf="commande.versement != 0 && commande.restant != 0" class="badge bg-warning me-1">En
+                      Cours</span>
+                    <span *ngIf="commande.versement == 0 && commande.restant != 0" class="badge bg-danger me-1">Non
+                      Payé</span>
+                  </td>
+                  <td>
+                    <a [hidden]="commande.restant ==0 " (click)="editCommande(commande)"
+                      class="btn btn-sm  btn-outline-warning mx-1"><i class="fa fa-edit"></i></a>
+                    <a (click)="detailCommande(commande)" class="btn btn-sm btn-outline-primary mx-1"><i
+                        class="fa fa-eye"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card container-fluid mb-2 table-responsive pb-3"
+            *ngIf="dossier.etat == true && userService.checkPermissionExistence(firstRoleName+ ' encaisser Dossier')">
+            <div class="row">
+              <fieldset class="col-12">
+                <legend>Réglement</legend>
+                <div class="input-group">
+                  <span class="input-group-text">Encaissement</span>
+                  <input autofocus [disabled]="totalRestant <= 0" (keyup)="onVerser()" [(ngModel)]="verser"
+                    name="verser" type="number" class="form-control" />
+                  <input readonly [(ngModel)]="monnaie" name="monnaie" type="number" class="form-control bg-light mx-2"
+                    placeholder="la monnaie" />
+                  <button [disabled]="!verser || disableBtn" (click)="onSubmitReglement()"
+                    class="btn btn-outline-success mx-2" type="button">
+                    <i class="fa fa-check"></i>
+                  </button>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tabs-devis" role="tabpanel">
+          <div class="container-fluid table-responsive border mb-3" style="height: 250px;">
+            <table class="table card-table table-vcenter text-nowrap datatable">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Numéro</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Total HT</th>
+                  <th scope="col">Total TTC</th>
+                  <th scope="col">Net à Payer </th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="listDevis?.length == 0">
+                  <td class="font-italic text-center" colspan="5">
+                    <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucun devis disponible pour
+                      {{client.name}}...</marquee>
+                  </td>
+                </tr>
+                <tr *ngFor="let devis of listDevis">
+                  <td>{{devis.numero}}</td>
+                  <td>{{devis.created_at | date:"d-MM-y à H:mm"}}</td>
+                  <td>{{devis.totht | number: '1.0-0'}} F CFA</td>
+                  <td>{{devis.totttc | number: '1.0-0'}} F CFA</td>
+                  <td>{{devis.net | number: '1.0-0'}} F CFA</td>
+                  <td>
+                    <a [hidden]="!userService.checkPermissionExistence(firstRoleName+ ' modifier facture et devis Vente')"
+                      (click)="editDevis(devis)" class="btn btn-sm  btn-outline-warning mx-1"><i
+                        class="fa fa-edit"></i></a>
+                    <a (click)="detailDevis(devis)" class="btn btn-sm btn-outline-primary mx-1"><i
+                        class="fa fa-eye"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-pane" id="tabs-bon" role="tabpanel">
+          <div class="container-fluid table-responsive border mb-3" style="height: 250px;">
+            <table class="table card-table table-vcenter text-nowrap datatable">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Numéro</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Total HT</th>
+                  <th scope="col">Total TTC</th>
+                  <th scope="col">Net à Payer </th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="listBons?.length == 0">
+                  <td class="font-italic text-center" colspan="5">
+                    <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucun bon disponible pour
+                      {{client.name}}...</marquee>
+                  </td>
+                </tr>
+                <tr *ngFor="let bon of listBons">
+                  <td>{{bon.numero}}</td>
+                  <td>{{bon.created_at | date:"d-MM-y à H:mm"}}</td>
+                  <td>{{bon.totht | number: '1.0-0'}} F CFA</td>
+                  <td>{{bon.totttc | number: '1.0-0'}} F CFA</td>
+                  <td>{{bon.net | number: '1.0-0'}} F CFA</td>
+                  <td>
+                    <a [hidden]="!userService.checkPermissionExistence(firstRoleName+ ' modifier bon Vente') && bon.restant ==0 "
+                      (click)="editBon(bon)" class="btn btn-sm  btn-outline-warning mx-1"><i class="fa fa-edit"></i></a>
+                    <a (click)="detailBon(bon)" class="btn btn-sm btn-outline-primary mx-1"><i
+                        class="fa fa-eye"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isDossier == 'none'">
+  <div class="text-center">
+    <div class="spinner-border p-4 mt-5" role="status">
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isDossier == 'fournisseur'">
+
+  <div class="page-header mb-3 bg-white">
+    <!-- Page pre-title -->
+    <div class="page-title mx-2">
+      <i class="fa fa-arrow-circle-left btn" aria-hidden="true" (click)="routeDossier()"></i>
+      <span class="mx-2 h2 mt-1">Détail Dossier fournisseur : {{dossier.nom}} / ce dossier a été
+        créé par <span class="text-nowrap text-uppercase font-weight-bold ">{{dossier.auteur}}</span> le
+        {{dossier.created_at |
+        date:"d-M-y à H:mm"}}</span>
+    </div>
+  </div>
+
+  <div class="row mb-3 container-fluid">
+    <div class="col-md-2 border-right border-dark">
+      <img width="100%" class="img-fluid w-75" src="assets/img/folder_open_fournisseur.png" alt="" srcset="">
+    </div>
+
+    <div class="col-md">
+      <div class="mt-2">
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Nombre de factures {{nbrAchat}} </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total des achats {{totalAchat}} F CFA </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total versés {{totalPayerAchat}} F CFA </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total restants {{totalRestantAchat}} F CFA </div>
+      </div>
+    </div>
+
+    <div class="col-md">
+      <div class="mt-2">
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Nombre de bon d'achats {{nbrBonAchat}} </div>
+        <div class="h3"> <i class="fa fa-check text-dark"></i> Montant total des bons d'achats {{totalBonAchat}} F CFA
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a href="#tabs-factureAchat" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+            role="tab">Factures</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a href="#tabs-bonAchat" class="nav-link" data-bs-toggle="tab" aria-selected="false" tabindex="-1"
+            role="tab">Bon d'achat</a>
+        </li>
+        <li class="mx-5" *ngIf="hasPhone && hasImpayes">
+          <button class="btn btn-success btn-sm" (click)="sendWhatsapp()">
+            <i class="fa fa-whatsapp me-1"></i>
+            Relancer WhatsApp
+          </button>
+        </li>
+        <li class="mx-5" *ngIf="!hasImpayes">
+          <span class="badge bg-success">
+            Toutes les factures sont réglées
+          </span>
+        </li>
+        <li class="mx-5" *ngIf="!hasPhone">
+
+          <div class="input-group">
+
+            <input class="form-control form-control-sm" [(ngModel)]="phone" placeholder="Numéro WhatsApp">
+
+            <button class="btn btn-primary btn-sm" (click)="updatePhone()">
+
+              Enregistrer
+
+            </button>
+
+          </div>
+
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="tab-content">
+        <div class="tab-pane active show" id="tabs-factureAchat" role="tabpanel">
+          <div class="container-fluid table-responsive border mb-3" style="height: 250px;">
+            <table class="table card-table table-vcenter text-nowrap datatable">
+              <thead>
+                <tr>
+                  <th>Numéro</th>
+                  <th>Date</th>
+                  <th>Fournisseur</th>
+                  <th>Total H</th>
+                  <th>Total tt</th>
+                  <th>Net à payer </th>
+                  <th>Versement </th>
+                  <th>Restant </th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="this.listAchats?.length == 0">
+                  <td class="font-italic text-center" colspan="8">
+                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                      Aucun achat éffectuée pour le moment...
+                    </marquee>
+                  </td>
+                </tr>
+                <tr *ngFor="let achat of this.listAchats">
+                  <td>{{achat.numero}}</td>
+                  <td>{{achat.date_achat}}</td>
+                  <td>{{achat.nom_fn}}</td>
+                  <td>{{achat.totht | number: '1.0-0'}} F CFA</td>
+                  <td>{{achat.totttc | number: '1.0-0'}} F CFA</td>
+                  <td>{{achat.net | number: '1.0-0'}} F CFA</td>
+                  <td>{{achat.versement | number: '1.0-0'}} F CFA</td>
+                  <td>{{achat.restant | number: '1.0-0'}} F CFA</td>
+                  <td>
+                    <span *ngIf="achat.restant == 0" class="badge bg-success me-1">Payé</span>
+                    <span *ngIf="achat.versement != 0 && achat.restant != 0" class="badge bg-warning me-1">En
+                      Cours</span>
+                    <span *ngIf="achat.versement == 0 && achat.restant != 0" class="badge bg-danger me-1">Non
+                      Payé</span>
+                  </td>
+                  <td>
+                    <a (click)="detailAchat(achat)" class="btn btn-sm btn-outline-primary mx-1"><i
+                        class="fa fa-eye"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card container-fluid mb-2 table-responsive pb-3"
+            *ngIf="dossier.etat == true && userService.checkPermissionExistence(firstRoleName+ ' encaisser Dossier')">
+            <div class="row">
+              <fieldset class="col-12">
+                <legend>Réglement</legend>
+                <div class="input-group">
+                  <span class="input-group-text">Encaissement</span>
+                  <input autofocus [disabled]="!(totalAchat- totalPayerAchat)" (keyup)="onVerserAchat()"
+                    [(ngModel)]="verser" name="verser" type="number" class="form-control" />
+                  <input readonly [(ngModel)]="monnaie" name="monnaie" type="number" class="form-control bg-light mx-2"
+                    placeholder="la monnaie" />
+                  <button [disabled]="!verser || disableBtn" (click)="onSubmitReglementAchat()"
+                    class="btn btn-outline-success mx-2" type="button">
+                    <i class="fa fa-check"></i>
+                  </button>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tabs-bonAchat" role="tabpanel">
+          <div class="container-fluid table-responsive border mb-3" style="height: 250px;">
+            <table class="table card-table table-vcenter text-nowrap datatable">
+              <thead>
+                <tr>
+                  <th>Numéro</th>
+                  <th>Date</th>
+                  <th>Fournisseur</th>
+                  <th>Total H</th>
+                  <th>Total tt</th>
+                  <th>Net à payer </th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="this.listBonAchats?.length == 0">
+                  <td class="font-italic text-center" colspan="8">
+                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                      Aucun bon d'achat éffectuée pour le moment...
+                    </marquee>
+                  </td>
+                </tr>
+                <tr *ngFor="let achat of this.listBonAchats">
+                  <td>{{achat.numero}}</td>
+                  <td>{{achat.date_achat}}</td>
+                  <td>{{achat.nom_fn}}</td>
+                  <td>{{achat.totht | number: '1.0-0'}} F CFA</td>
+                  <td>{{achat.totttc | number: '1.0-0'}} F CFA</td>
+                  <td>{{achat.net | number: '1.0-0'}} F CFA</td>
+                  <td>
+                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifer bon achat Achat')"
+                      (click)="editBonAchat(achat)" class="btn btn-sm btn-outline-warning mx-1"><i
+                        class="fa fa-edit"></i></a>
+                    <a (click)="detailBonAchat(achat)" class="btn btn-sm btn-outline-primary mx-1"><i
+                        class="fa fa-eye"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-pane" id="tabs-bon" role="tabpanel">
+          <div class="container-fluid table-responsive border mb-3" style="height: 250px;">
+            <table class="table card-table table-vcenter text-nowrap datatable">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Numéro</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Total HT</th>
+                  <th scope="col">Total TTC</th>
+                  <th scope="col">Net à Payer </th>
+                  <th scope="col">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="listBons?.length == 0">
+                  <td class="font-italic text-center" colspan="5">
+                    <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucun bon disponible pour
+                      {{client.name}}...</marquee>
+                  </td>
+                </tr>
+                <tr *ngFor="let bon of listBons">
+                  <td>{{bon.numero}}</td>
+                  <td>{{bon.created_at | date:"d-MM-y à H:mm"}}</td>
+                  <td>{{bon.totht | number: '1.0-0'}} F CFA</td>
+                  <td>{{bon.totttc | number: '1.0-0'}} F CFA</td>
+                  <td>{{bon.net | number: '1.0-0'}} F CFA</td>
+                  <td>
+                    <a [hidden]="!userService.checkPermissionExistence(firstRoleName+ ' modifier bon Vente') && bon.restant ==0 "
+                      (click)="editBon(bon)" class="btn btn-sm  btn-outline-warning mx-1"><i class="fa fa-edit"></i></a>
+                    <a (click)="detailBon(bon)" class="btn btn-sm btn-outline-primary mx-1"><i
+                        class="fa fa-eye"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

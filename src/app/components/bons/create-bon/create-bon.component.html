@@ -1,0 +1,314 @@
+<div class="container-fluid">
+    <app-menu-vente></app-menu-vente>
+    <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">Création d'un nouveau bon de commande </span>
+    </div>
+
+    <div class="card p-2">
+        <!-- Liste  -->
+        <div class="row mb-2 mt-2">
+            <div class="col-md-2">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">N° Bon</label>
+                    <input value="{{bonService.maxId}}" type="text" class="form-control bg-light" readonly>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Date Bon</label>
+                    <input type="text" [(ngModel)]="date_bon" name="date_bon" class="form-control bg-light" readonly>
+                </div>
+            </div>
+
+            <div class="col-md">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Client</label>
+                    <div class="input-group">
+                        <button (click)="openClient()" data-bs-toggle="modal" data-bs-target="#modalClient"
+                            class="btn mx-1"><i class="fa fa-plus"></i></button>
+                        <div class="seach-clients">
+                            <div class="form-select selected" (click)="showDropdown = !showDropdown">
+                                <ng-container *ngIf="selectedClient; else placeholder">
+                                    <span>{{ selectedClient.name }}</span>
+                                </ng-container>
+                                <ng-template #placeholder>
+                                    <span>Sélectionner un client...</span>
+                                </ng-template>
+                            </div>
+
+                            <div class="form-select showlists" *ngIf="showDropdown">
+                                <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+                                <div class="showlists-item" *ngFor="let client of filteredClient"
+                                    (click)="selectClient(client); showDropdown = false"
+                                    [hidden]="client.name == 'Néant'">
+                                    <span>{{ client.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-light mb-2">
+            <span class="input-group-text">
+                <input type="text" id="InputDesignation" (keyup)="searchDesignation()" placeholder="Designation"
+                    class="form-control mx-2">
+                <input type="text" id="InputFamille" (keyup)="searchFamille()" placeholder="Famille"
+                    class="form-control mx-2">
+                <input type="text" id="InputReference" (keyup)="searchReference()" placeholder="Réference"
+                    class="form-control mx-2">
+            </span>
+        </div>
+
+        <!-- Liste Produit -->
+        <div class="row mb-3" style="width: 100%; height: 450px;">
+            <as-split direction="horizontal">
+                <as-split-area [size]="60">
+                    <div class="table-scroll-container table-responsive">
+                        <table class="table" id="tableProduit">
+                            <thead class="sticky-top">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Article</th>
+                                    <th>Qty</th>
+                                    <th>Prix</th>
+                                    <th>Famille</th>
+                                    <th>reférence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let produit of this.produitService.listProduits">
+                                    <td>
+                                        <input id="checkbox" *ngIf="produit.qty >0" type="checkbox"
+                                            [(ngModel)]="produit.isselected" name="{{produit}}"
+                                            (change)="onchange(produit)">
+                                        <input *ngIf="produit.qty <=0" type="checkbox" [(ngModel)]="produit.isselected"
+                                            name="{{produit}}" (change)="onchangeAlert(produit)">
+                                    </td>
+                                    <td>{{produit.designation}}</td>
+                                    <td *ngIf="produit.qty <= 0" style="background-color: rgba(255, 0, 0, 0.267);">
+                                        {{produit.qty}}</td>
+                                    <td *ngIf="produit.qty >0">{{produit.qty}}</td>
+                                    <td>{{produit.prix | number: '1.0-0'}}</td>
+                                    <td>{{produit.famille}}</td>
+                                    <td>{{produit.ref}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </as-split-area>
+                <as-split-area [size]="60">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Désignation</th>
+                                    <th>Pu</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                    <th>Option</th>
+                                    <th>
+                                        <a (click)="removeLcmd()"> <i class="fa fa-trash fa-2x"></i></a>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="this.ligneBonService.listLigneBon.length == 0">
+                                    <td class="font-italic text-center" colspan="5">
+                                        <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucun
+                                            produit sélectionné...</marquee>
+                                    </td>
+                                </tr>
+                                <tr id="myTable" *ngFor="let lc of this.ligneBonService.listLigneBon ;let i = index;">
+                                    <td>{{lc.produit}}</td>
+                                    <td>
+                                        <span *ngIf="!lc.editable">{{lc.prix | number: '1.0-0'}}</span>
+                                        <input size="3" type="number" class="form-control" [(ngModel)]="lc.prix"
+                                            name="prix" *ngIf="lc.editable" />
+                                    </td>
+                                    <td class="input-group">
+                                        <button [disabled]="lc.qty == 0.5 || editeLigne"
+                                            class="btn btn-sm btn-light mx-1" (click)="decremente(lc)"><i
+                                                class="fa fa-minus"></i></button>
+                                        <span class="mx-1" *ngIf="!lc.editable">{{lc.qty}}</span>
+                                        <input size="2" type="number" class="form-control form-control-sm-2 "
+                                            [(ngModel)]="lc.qty" name="qty" *ngIf="lc.editable" />
+                                        <button [disabled]="editeLigne" class="btn btn-sm btn-light mx-1"
+                                            (click)="incremente(lc)"><i class="fa fa-plus"></i></button>
+                                    </td>
+                                    <td>{{lc.totht | number: '1.0-0'}}</td>
+                                    <td>
+                                        <button [disabled]="editeLigne" *ngIf="!lc.editable" (click)="editDomain(lc)"
+                                            class="btn btn-sm btn-outline-warning mx-1"><i
+                                                class="fa fa-edit"></i></button>
+                                        <button *ngIf="lc.editable" (click)="editDomainValid(lc)"
+                                            class="btn btn-sm btn-outline-success mx-1"><i
+                                                class="fa fa-check"></i></button>
+                                        <button [disabled]="editeLigne" (click)="deleteLigneBon(lc.codeProduit)"
+                                            class="btn btn-sm btn-outline-danger mx-1"><i
+                                                class="fa fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </as-split-area>
+            </as-split>
+        </div>
+    </div>
+
+    <div class="card p-2 mt-2 mb-2">
+        <div class="row">
+            <!-- Details Regelement  -->
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total Ht : </label>
+                    <input type="text" class="form-control bg-light" [(ngModel)]="totht" name="totht" readonly>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total Tva :</label>
+                    <select class="form-control" (change)="getTtc()" [(ngModel)]="tottva" name="tottva">
+                        <option value="0">0.0%</option>
+                        <option value="18">18%</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total TTC : </label>
+                    <input type="text" class="form-control bg-light" [(ngModel)]="totttc" name="totttc" readonly>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Réduction : </label>
+                    <input [disabled]="this.reduction > this.totttc && alert()" type="number" class="form-control"
+                        (keyup)="getTtc()" [(ngModel)]="reduction" name="reduction">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Net à payer : </label>
+                    <input type="text" class="form-control bg-light" [(ngModel)]="net" name="net" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- button submit -->
+    <div class="row mb-1">
+        <div class="mb-1 mt-2">
+            <span class="float-start">
+                <button routerLink="/bon" type="button" class="btn btn-dark">Annuler</button>
+            </span>
+            <span class="float-end">
+                <button [disabled]="isDisable || editeLigne || id_client == 1 || this.selectedClient == null ||
+                    this.ligneBonService.listLigneBon.length == 0" type="button" (click)="onSubmitBon()"
+                    class="btn btn-success">
+                    <span *ngIf="!isDisable && !isClick">Enregistrer</span>
+                    <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+                    <span *ngIf="isDisable && isClick">Chargement...</span>
+                </button>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur" id="modalClient" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form [formGroup]="formClient" (ngSubmit)="onSubmitClient()" autocomplete="off" novalidate>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-success"></div>
+                <div class="modal-header">Nouveau Client</div>
+                <div class="modal-body">
+                    <div class="mb-3 mt-2">
+                        <div class="md-2">
+                            <label for="basic-url" style="font-weight: 600;" class="form-label">Nom Client</label>
+                            <input placeholder="nom du client" type="text"
+                                class="form-control border border-info border-5 " formControlName="name" id="name">
+                            <div *ngIf="fClient['name'].touched && fClient['name'].invalid" class="alert alert-danger">
+                                <div *ngIf="fClient['name'].errors && fClient['name'].errors['required']">Ce champs est
+                                    requis !</div>
+                            </div>
+                        </div>
+                        <div class="md-2">
+                            <label for="basic-url" style="font-weight: 600;" class="form-label mt-1 ">Numéro
+                                Téléphone</label>
+                            <input placeholder="numéro téléphone du client" type="number"
+                                class="form-control border border-info border-5 " formControlName="phone" id="phone">
+                        </div>
+                        <div class="md-2">
+                            <label for="basic-url" style="font-weight: 600;" class="form-label mt-1 ">Surnom</label>
+                            <input placeholder="Surnom du client" type="text"
+                                class="form-control border border-info border-5 " formControlName="surnom" id="surnom">
+                        </div>
+                        <div class="md-2">
+                            <label for="basic-url" style="font-weight: 600;" class="form-label mt-1 ">Adresse</label>
+                            <input placeholder="Adresse du client" type="text"
+                                class="form-control border border-info border-5 " formControlName="address"
+                                id="address">
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center ">
+                        <div class="col-auto">
+                            <button [disabled]="!formClient.valid" type="submit" class="btn btn-success w-100"
+                                data-bs-dismiss="modal">Ajouter</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Emprunte Produit -->
+<div class="modal modal-blur" id="modalAlertLine" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-status bg-warning"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-warning icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vouloir emprunter sur ce produit ?
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" (click)="cancelAlert()" class="btn w-100"
+                                data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="submitAlert()" class="btn btn-success w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,185 @@
+<div class="container-fluid">
+    <div class="card-header text-dark py-1 h3 mb-3 d-flex justify-content-center">
+        <span *ngIf="mouvement.type == 'Stock => Depôt'" class="mx-1 h1">Mouvement Fora vers Sicap </span>
+        <span *ngIf="mouvement.type != 'Stock => Depôt'" class="mx-1 h1">Mouvement Sicap vers Fora </span>
+    </div>
+    <div class="card p-2">
+        <div class="card-header h2">Modifer le Mouvement N° {{ mouvement.numero }}</div>
+        <!-- Liste  -->
+        <div class="row mb-2 mt-2">
+
+            <div class="col-md-2">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">N° mouvement</label>
+                    <input value="{{mouvement.numero}}" type="text" class="form-control bg-light" readonly>
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Date du mouvement</label>
+                    <input type="text" [(ngModel)]="date_mouvement" name="date_mouvement" class="form-control bg-light"
+                        readonly>
+                </div>
+            </div>
+
+            <div class="col-md">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Le Responsable </label>
+                    <input type="text" [(ngModel)]="responsable" name="responsable" class="form-control">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-light mb-2">
+            <span class="input-group-text">
+                <input type="text" id="InputDesignation" (keyup)="searchDesignation()" placeholder="Designation"
+                    class="form-control mx-2">
+            </span>
+        </div>
+
+        <!-- Liste Produit -->
+        <div class="row mb-3" style="width: 100%; height: 450px;">
+            <as-split direction="horizontal">
+                <as-split-area [size]="45">
+                    <div class="table-responsive">
+                        <div class="card-header text-dark py-1 h3 mb-3 d-flex justify-content-center">
+                            <span *ngIf="mouvement.type == 'Stock => Depôt'" class="mx-1 h4">Liste produit disponible
+                                Fora </span>
+                            <span *ngIf="mouvement.type != 'Stock => Depôt'" class="mx-1 h4">Liste produit disponible
+                                Sicap</span>
+                        </div>
+                        <table class="table" id="tableProduit">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Produit</th>
+                                    <th>Qty</th>
+                                    <th>Prix</th>
+                                    <th>Réf</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="produits.length == 0">
+                                    <td class="font-italic text-center" colspan="5">
+                                        <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucun
+                                            produit disponible...</marquee>
+                                    </td>
+                                </tr>
+                                <tr [hidden]="mouvement.type == 'Stock => Depôt'" *ngFor="let produit of produits">
+                                    <td>
+                                        <input id="checkbox" *ngIf="produit.stock >0" type="checkbox"
+                                            [(ngModel)]="produit.isselected" name="{{produit}}"
+                                            (change)="onchangeDepot(produit)">
+                                        <input *ngIf="produit.stock <= 0" type="checkbox" disabled>
+                                    </td>
+                                    <td>{{produit.designation}}</td>
+                                    <td
+                                        [ngClass]="{'alert alert-danger': produit.stock <= 0, 'alert alert-warning': produit.stock <= produit.qtyAlert}">
+                                        {{produit.stock}}</td>
+                                    <td>{{produit.prix | number: '1.0-0'}}</td>
+                                    <td>{{produit.ref }}</td>
+                                </tr>
+                                <tr [hidden]="mouvement.type != 'Stock => Depôt'" *ngFor="let produit of produits">
+                                    <td>
+                                        <input id="checkbox" *ngIf="produit.qty >0" type="checkbox"
+                                            [(ngModel)]="produit.isselected" name="{{produit}}"
+                                            (change)="onchangeStock(produit)">
+                                        <input *ngIf="produit.qty <= 0" type="checkbox" disabled>
+                                    </td>
+                                    <td>{{produit.designation}}</td>
+                                    <td
+                                        [ngClass]="{'alert alert-danger': produit.qty <= 0, 'alert alert-warning': produit.qty <= produit.qtyAlert}">
+                                        {{produit.qty}}</td>
+                                    <td>{{produit.prix | number: '1.0-0'}}</td>
+                                    <td>{{produit.ref }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </as-split-area>
+                <as-split-area [size]="55">
+                    <div class="table-responsive">
+                        <div class="card-header text-dark py-1 h3 mb-3 d-flex justify-content-center">
+                            <span class="mx-1 h4">Liste produit à mouvementés </span>
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Réf</th>
+                                    <th>Dépôt</th>
+                                    <th>Qty</th>
+                                    <th>
+                                        Option
+                                        <a hidden class="float-end btn-outline-danger btn btn-sm"
+                                            (click)="removeLignes()"> <i class="fa fa-trash fa-1x"></i></a>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="this.produitService.listLigneMouvement.length == 0">
+                                    <td class="font-italic text-center" colspan="5">
+                                        <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucun
+                                            produit sélectionné...</marquee>
+                                    </td>
+                                </tr>
+                                <tr *ngFor="let produit of this.produitService.listLigneMouvement ;let i = index;">
+                                    <td>{{produit.produit}}</td>
+                                    <td>{{produit.ref}}</td>
+                                    <td>{{produit.entrepot}}</td>
+                                    <td>
+                                        <div class="input-group " *ngIf="produit.editable">
+                                            <button class="btn btn-sm btn-danger" (click)="cancel(produit)"> <i
+                                                    class="fa fa-ban"></i> </button>
+                                            <input type="number" class="form-control-sm w-50" [(ngModel)]="produit.qty"
+                                                name="produit.qty" />
+                                            <button class="btn btn-sm btn-success" (click)="valide(produit)"> <i
+                                                    class=" fa fa-check"></i> </button>
+                                        </div>
+                                        <span *ngIf="!produit.editable">
+                                            {{produit.qty}}
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <button [disabled]="editeLigne" (click)="deleteLigne(produit.matricule)"
+                                            class="float-end mx-2 btn btn-sm btn-outline-danger">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                        <button [disabled]="editeLigne" *ngIf="!produit.editable"
+                                            class="float-end mx-2 btn btn-sm btn-info-danger"
+                                            (click)="editDomain(produit)">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </as-split-area>
+            </as-split>
+        </div>
+
+    </div>
+
+    <!-- button submit -->
+    <div class="row mb-1">
+        <div class="mb-1 mt-2">
+            <span class="float-start">
+                <button (click)="detail(mouvement.id)" type="button" class="btn btn-dark">Annuler</button>
+            </span>
+            <span class="float-end">
+                <button [disabled]="this.produitService.listLigneMouvement.length == 0 || isDisable || editeLigne"
+                    type="button" (click)="updateMouvement()" class="btn btn-success">
+                    <span *ngIf="!isDisable && !isClick">Mettre à jour</span>
+                    <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+                    <span *ngIf="isDisable && isClick">Chargement...</span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,390 @@
+<div class="row row-deck row-cards">
+  <!--Liste des voiture-->
+  <div class="col-md-12">
+    <div class="card bg-light">
+      <div class="card-header bg-white">
+        <h3 class="card-title">Liste des Comptes</h3>
+      </div>
+      <div class="card-body border-bottom py-3 bg-white">
+        <div class="input-group">
+          <span class="input-group-text d-none d-lg-block" id="basic-addon1">Rechercher :</span>
+          <input type="text" (keyup)="search()" id="InputSearch" class="form-control"
+            placeholder="Rechercher une compte">
+          <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' créer compte Compte')"
+            href="javascript:void(0)" class="btn btn-primary mx-2" data-bs-toggle="modal"
+            data-bs-target="#modal-compte">
+            Nouveau compte
+          </a>
+        </div>
+      </div>
+      <div class="card mb-2">
+        <div class="row p-3">
+          <div class="table-responsive bg-white mb-3">
+            <table class="table card-table">
+              <thead>
+                <tr>
+                  <th>N° de compte</th>
+                  <th>Solde compte</th>
+                  <th>Titulaire</th>
+                  <th>Date de création</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let compte of comptes | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrCompte }">
+                  <td><span class="text-muted">{{compte.num}}</span></td>
+                  <td>{{compte.sold | number: '1.0-0'}} F CFA</td>
+                  <td>{{compte.owner}}</td>
+                  <td>{{compte.created_at | date:"d-M-y à H:mm"}}</td>
+                  <td>
+                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' detail compte Compte')"
+                      class="btn btn-sm text-primary" (click)="detail(compte)">
+                      <i class="fa fa-eye"></i>
+                    </a>
+                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier compte Compte')"
+                      class="btn btn-sm text-warning mx-3" data-bs-toggle="modal" data-bs-target="#modal-compte-update"
+                      (click)="update(compte)"> <i class="fa fa-edit"></i>
+                    </a>
+                    <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer compte Compte')"
+                      class="btn btn-sm text-danger" (click)="openModalDelete(compte.id)" data-bs-toggle="modal"
+                      data-bs-target="#modal-danger">
+                      <i class="fa fa-trash"></i>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer d-flex align-items-center" style="height: 40px;">
+            <p class="m-0 text-muted">Affichage
+              <span *ngIf="page == 1">{{defaultItem}}</span>
+              <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+              <span *ngIf="page != 1 && page == nbrPage">{{nbrCompte}}</span>
+              sur <span>{{nbrCompte}}</span> comptes
+            </p>
+            <ul class="pagination m-0 ms-auto mt-3">
+              <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+              </pagination-controls>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Detail voiture -->
+      <div class="col-md-12" *ngIf="isDetail">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card">
+              <div class="d-flex justify-content-center p-2">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">
+                  <span class="input-group">
+                    <span class="mt-2">Detail Versement | Retrait du Compte N° {{num}}</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-2 mt-2">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Versements</h3>
+                <span class="input-group" *ngIf="!retrait">
+                  <!-- Versement  -->
+                  <input [(ngModel)]="versement" name="versement" type="number" class="form-control mx-2"
+                    placeholder="somme" />
+                  <input [(ngModel)]="descVerse" name="descVerse" type="text" class="form-control mx-2"
+                    placeholder="description" />
+
+                  <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' verser compte Compte')"
+                    [disabled]="!versement || disableVerse || !descVerse" (click)="onSubmitIn()"
+                    class="btn btn-outline-success mx-1" type="button"> <i class="fa fa-check"></i>
+                  </button>
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive" style="height: 170px;">
+                  <table class="table card-table">
+                    <thead>
+                      <tr>
+                        <th>Date Encaisement</th>
+                        <th>Heure</th>
+                        <th>Versement</th>
+                        <th>Description</th>
+                        <th>Option</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let versement of versers">
+                        <td>{{versement.created_at | date:"d-M-y"}}</td>
+                        <td>{{versement.created_at | date:"H:mm"}}</td>
+                        <td>{{versement.montant | number: '1.0-0'}}</td>
+                        <td>{{versement.desc}}</td>
+                        <td>
+                          <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer versement compte Compte')"
+                            class="btn btn-sm text-danger mx-2" (click)="modalDeleteVerser(versement.id)"
+                            data-bs-toggle="modal" data-bs-target="#modal-danger-verse">
+                            <i class="fa fa-trash"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="col-md-6 mb-2 mt-2">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Retraits</h3>
+                <span class="input-group" *ngIf="!versement">
+                  <!-- Versement  -->
+                  <input [(ngModel)]="retrait" name="retrait" type="number" class="form-control mx-2"
+                    placeholder="somme" />
+                  <input [(ngModel)]="descRetrait" name="descRetrait" type="text" class="form-control mx-2"
+                    placeholder="description" />
+
+                  <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' retirer compte Compte')"
+                    [disabled]="!retrait || disableRetrait || !descRetrait" (click)="onSubmitOut()"
+                    class="btn btn-outline-success mx-1" type="button"> <i class="fa fa-check"></i>
+                  </button>
+                </span>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive" style="height: 170px;">
+                  <table class="table card-table">
+                    <thead>
+                      <tr>
+                        <th>Date Décaisement</th>
+                        <th>Heure</th>
+                        <th>Retrait</th>
+                        <th>Description</th>
+                        <th>Option</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let retrait of retraits">
+                        <td>{{retrait.created_at | date:"d-M-y"}}</td>
+                        <td>{{retrait.created_at | date:"H:mm"}}</td>
+                        <td>{{retrait.montant | number: '1.0-0'}}</td>
+                        <td>{{retrait.desc}}</td>
+                        <td>
+                          <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer retrait compte Compte')"
+                            class="btn btn-sm text-danger mx-2" (click)="modalDeleteRetirer(retrait.id)"
+                            data-bs-toggle="modal" data-bs-target="#modal-danger-retrait">
+                            <i class="fa fa-trash"></i>
+                          </a>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="row">
+            <div class="col-md-4">
+              Motant Verser : <span>{{calculateTotalVersements(versers) | number: '1.0-0'}} F
+                CFA</span>
+            </div>
+            <div class="col-md-4">
+              Motant Retirer : <span>{{calculateTotalRetraits(retraits) | number: '1.0-0'}} F CFA</span>
+            </div>
+            <div class="col-md-4">
+              Motant Total : <span>{{calculateTotalVersements(versers) - calculateTotalRetraits(retraits) | number:
+                '1.0-0'}} F CFA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal New Car -->
+<div class="modal modal-blur" id="modal-compte" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ajouter un Compte</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+          <div class="mb-3">
+            <label class="form-label">Nom du Propriétaire</label>
+            <input type="text" class="form-control" placeholder="Nom du propriétaire" formControlName="owner"
+              id="owner">
+            <div *ngIf="f['owner'].touched && f['owner'].invalid" class="alert alert-danger">
+              <div *ngIf="f['owner'].errors && f['owner'].errors['required']">Donner un nom au propriétaire !</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Solde</label>
+            <input type="text" class="form-control" placeholder="Somme" formControlName="sold" id="sold">
+            <div *ngIf="f['sold'].touched && f['sold'].invalid" class="alert alert-danger">
+              <div *ngIf="f['sold'].errors && f['sold'].errors['required']">Donner la somme svp !</div>
+            </div>
+          </div>
+          <div class="mb-2">
+            <button type="button" class="btn btn-danger" style="float: left;" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success" style="float: right;"
+              [disabled]="!form.valid">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update Car -->
+<div class="modal modal-blur" id="modal-compte-update" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modification d'un Compte</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="formUp" (ngSubmit)="onUpdate()" autocomplete="off" novalidate>
+          <div class="mb-2">
+            <label class="form-label">Nom du Propriétaire</label>
+            <input type="text" class="form-control" placeholder="Nom du propriétaire" formControlName="owner"
+              id="ownerUp">
+            <div *ngIf="fUp['owner'].touched && fUp['owner'].invalid" class="alert alert-danger">
+              <div *ngIf="fUp['owner'].errors && fUp['owner'].errors['required']">Donner un nom au propriétaire !</div>
+            </div>
+          </div>
+          <div class="mb-1">
+            <button type="button" class="btn btn-danger" style="float: left;" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success" style="float: right;" [disabled]="!formUp.valid">Mettre à
+              jour</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Delete Car -->
+<div class="modal modal-blur" id="modal-danger" data-backdrop="static" data-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-status bg-danger"></div>
+      <div class="modal-body text-center py-4">
+        <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 9v2m0 4v.01" />
+          <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+        </svg>
+        <h3>Êtes-vous sûr ?</h3>
+        <div class="text-muted">
+          Voulez-vous vraiment supprimer ce compte ? Ce que vous avez fait ne peut être annulé.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col">
+              <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+            </div>
+            <div class="col">
+              <a href="javascript:void(0)" (click)="deleteCompte()" class="btn btn-danger w-100"
+                data-bs-dismiss="modal">
+                OUI
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Delete Ligne Versement -->
+<div class="modal modal-blur" id="modal-danger-verse" data-backdrop="static" data-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-status bg-danger"></div>
+      <div class="modal-body text-center py-4">
+        <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 9v2m0 4v.01" />
+          <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+        </svg>
+        <h3>Êtes-vous sûr ?</h3>
+        <div class="text-muted">
+          Voulez-vous vraiment supprimer cette ligne ? Ce que vous avez fait ne peut être annulé.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col">
+              <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+            </div>
+            <div class="col">
+              <a href="javascript:void(0)" (click)="deleteVerser()" class="btn btn-danger w-100"
+                data-bs-dismiss="modal">
+                OUI
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Delete Ligne Sortie -->
+<div class="modal modal-blur" id="modal-danger-retrait" data-backdrop="static" data-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-status bg-danger"></div>
+      <div class="modal-body text-center py-4">
+        <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 9v2m0 4v.01" />
+          <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+        </svg>
+        <h3>Êtes-vous sûr ?</h3>
+        <div class="text-muted">
+          Voulez-vous vraiment supprimer cette ligne ? Ce que vous avez fait ne peut être annulé.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col">
+              <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+            </div>
+            <div class="col">
+              <a href="javascript:void(0)" (click)="deleteRetirer()" class="btn btn-danger w-100"
+                data-bs-dismiss="modal">
+                OUI
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

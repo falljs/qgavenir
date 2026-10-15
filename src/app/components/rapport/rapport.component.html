@@ -1,0 +1,251 @@
+<div class="container-fluid">
+    <div class="row row-deck row-cards">
+
+        <app-menu-dashboard></app-menu-dashboard>
+
+        <!--Liste des voiture-->
+        <div class="col-md-12">
+            <div class="card bg-light">
+                <div class="card-header bg-white">
+                    <h3 class="card-title">Rapport de mes bénéfices</h3>
+                    <a href="javascript:void(0)" (click)="getAllBenefice()"
+                        class="float-right text-decoration-none mx-2">
+                        Afficher tous les rapports</a>
+                </div>
+                <div class="card-body border-bottom py-3 mb-3 bg-white">
+
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="input-group">
+                                <span class="input-group-text d-none d-lg-block" id="basic-addon1">Afficher par
+                                    date</span>
+                                <input onfocus="(this.type='date')" (change)="onChangeDate($event.target)"
+                                    name="dateChange" type="text" class="form-control mx-1"
+                                    placeholder="Recherche par date" />
+                            </div>
+                        </div>
+
+                        <div class="col-md">
+                            <div class="input-group">
+                                <div class="input-group">
+                                    <span class="input-group-text d-none d-lg-block" id="basic-addon1">Afficher par
+                                        intervale </span>
+                                    <input onfocus="(this.type='date')" (change)="onChangeDate1($event.target)"
+                                        name="date" type="text" class="form-control mx-1 w-auto"
+                                        placeholder="Date debut" />
+                                    <input onfocus="(this.type='date')" (change)="onChangeDate2($event.target)"
+                                        name="date" type="text" class="form-control mx-1 w-auto" placeholder="Date fin"
+                                        [disabled]="!isDate2" />
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs nav-fill" data-bs-toggle="tabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-1" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
+                                    role="tab"><span class="badge bg-info h4 text-white">Bénéfice par produit</span></a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a href="#tabs-2" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                                    tabindex="-1"><span class="badge bg-orange h4 text-white">Bénéfice par
+                                        commande</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+
+                            <!-- Tab I -->
+                            <div class="tab-pane active show" id="tabs-1" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <div class="table-responsive bg-white mt-2">
+                                            <div class="h3 text-center ">Bénéfice par produit </div>
+                                            <table class="table card-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date de création</th>
+                                                        <th>Produit</th>
+                                                        <th>Prix d'achat</th>
+                                                        <th>Prix de vente</th>
+                                                        <th>Quantité vendu</th>
+                                                        <th>Bénéfice</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr
+                                                        *ngFor="let produit of listeBeneficeByProd | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrFrais }">
+                                                        <td>{{produit.created_at | date:"d-M-y à H:mm"}}</td>
+                                                        <td>{{produit.produit}}</td>
+                                                        <td>{{produit.prix_achat | number: '1.0-0'}} F CFA</td>
+                                                        <td>{{produit.prix | number: '1.0-0'}} F CFA</td>
+                                                        <td>{{produit.qty}}</td>
+                                                        <td>{{produit.benefice | number: '1.0-0'}} F CFA</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="card-footer d-flex align-items-center" style="height: 40px;">
+                                    <p class="m-0 text-muted">Affichage par produit
+                                        <span *ngIf="page == 1">{{defaultItem}}</span>
+                                        <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                                        <span *ngIf="page != 1 && page == nbrPage">{{nbrFrais}}</span>
+                                        sur <span>{{nbrFrais}}</span> Produit
+                                    </p>
+                                    <ul class="pagination m-0 ms-auto mt-3">
+                                        <pagination-controls (pageChange)="page = $event" previousLabel="Précédent"
+                                            nextLabel="Suivant">
+                                        </pagination-controls>
+                                    </ul>
+                                </div>
+
+                                <div class="card">
+                                    <div class="row p-3">
+                                        <!-- Liste  -->
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="basic-url" style="font-weight: 600;"
+                                                    class="form-label">Total
+                                                    Frais</label>
+                                                <span class="form-control bg-light">{{frais | number: '1.0-0'}} F
+                                                    FCA</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="basic-url" style="font-weight: 600;"
+                                                    class="form-label">Total
+                                                    bénéfices</label>
+                                                <span class="form-control bg-light">{{totalListeBeneficeByProd | number:
+                                                    '1.0-0'}} F FCA</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="basic-url" style="font-weight: 600;"
+                                                    class="form-label">Montant
+                                                    Restant</label>
+                                                <span *ngIf="totalListeBeneficeByProd > frais"
+                                                    class="form-control bg-light">
+                                                    {{totalListeBeneficeByProd - frais | number: '1.0-0'}} F FCA
+                                                </span>
+                                                <span *ngIf="totalListeBeneficeByProd <= frais"
+                                                    class="form-control bg-light">0 F FCA</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab II -->
+                            <div class="tab-pane" id="tabs-2" role="tabpanel">
+                                <div class="row">
+
+                                    <div class="col-md-12 mb-3">
+                                        <div class="table-responsive bg-white">
+                                            <div class="h3 text-center ">
+                                                Bénéfice par commande
+                                            </div>
+                                            <table class="table card-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date de création</th>
+                                                        <th>N°</th>
+                                                        <th>client</th>
+                                                        <th>Net</th>
+                                                        <th>Réduction</th>
+                                                        <th>Bénéfice</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr
+                                                        *ngFor="let commande of listeBeneficeByCmd | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrFrais }">
+                                                        <td>{{commande.created_at | date:"d-M-y à H:mm"}}</td>
+                                                        <td>{{commande.numero}}</td>
+                                                        <td>{{commande.nom_client}}</td>
+                                                        <td>{{commande.net | number: '1.0-0'}} F CFA</td>
+                                                        <td>{{commande.reduction | number: '1.0-0'}} F CFA</td>
+                                                        <td>{{commande.benefice | number: '1.0-0'}} F CFA</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="card-footer d-flex align-items-center" style="height: 40px;">
+                                    <p class="m-0 text-muted">Affichage par produit
+                                        <span *ngIf="page == 1">{{defaultItem}}</span>
+                                        <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                                        <span *ngIf="page != 1 && page == nbrPage">{{nbrFrais}}</span>
+                                        sur <span>{{nbrFrais}}</span> Produit
+                                    </p>
+                                    <ul class="pagination m-0 ms-auto mt-3">
+                                        <pagination-controls (pageChange)="page = $event" previousLabel="Précédent"
+                                            nextLabel="Suivant">
+                                        </pagination-controls>
+                                    </ul>
+                                </div>
+
+                                <div class="card">
+                                    <div class="row p-3">
+                                        <!-- Liste  -->
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="basic-url" style="font-weight: 600;"
+                                                    class="form-label">Total
+                                                    Frais</label>
+                                                <span class="form-control bg-light">{{frais | number: '1.0-0'}} F
+                                                    FCA</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="basic-url" style="font-weight: 600;"
+                                                    class="form-label">Total
+                                                    bénéfices</label>
+                                                <span class="form-control bg-light">{{totalListeBeneficeByCmd | number:
+                                                    '1.0-0'}} F FCA</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="basic-url" style="font-weight: 600;"
+                                                    class="form-label">Montant
+                                                    Restant</label>
+                                                <span *ngIf="totalListeBeneficeByCmd > frais"
+                                                    class="form-control bg-light">
+                                                    {{totalListeBeneficeByCmd - frais | number: '1.0-0'}} F FCA
+                                                </span>
+                                                <span *ngIf="totalListeBeneficeByCmd <= frais"
+                                                    class="form-control bg-light">0 F FCA</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>

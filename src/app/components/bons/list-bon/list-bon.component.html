@@ -1,0 +1,128 @@
+<div class="container-fluid">
+  <app-menu-vente></app-menu-vente>
+  <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">La liste des bons</span></div>
+
+
+  <div class="card mb-1 p-2">
+    <fieldset>
+      <legend class="mx-3">Recherche</legend>
+      <div class="input-group mb-1">
+        <button [disabled]="isDisable" type="button" (click)="getBons()" class="btn btn-sm btn-info mx-2 w-auto">
+          <span *ngIf="!isDisable && !isClick">Tous les bons</span>
+          <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+          <span *ngIf="isDisable && isClick">Chargement...</span>
+        </button>
+        <div class="seach-clients-desktop" id="desktop">
+          <div class="form-select selected" (click)="showDropdown = !showDropdown">
+            <ng-container *ngIf="selectedClient; else placeholder">
+              <span>{{ selectedClient.name }}</span>
+            </ng-container>
+            <ng-template #placeholder>
+              <span>Sélectionner un client...</span>
+            </ng-template>
+            <span class="arrow">&#9662;</span>
+          </div>
+          <div class="form-select showlists" *ngIf="showDropdown">
+            <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+            <div class="showlists-item" *ngFor="let client of filteredClient"
+              (click)="selectClient(client); showDropdown = false">
+              <span>{{ client.name }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="seach-clients-mobile" id="mobile">
+          <div class="form-select selected" (click)="showDropdown = !showDropdown">
+            <ng-container *ngIf="selectedClient; else placeholder">
+              <span>{{ selectedClient.name }}</span>
+            </ng-container>
+            <ng-template #placeholder>
+              <span>Sélectionner un client...</span>
+            </ng-template>
+            <span class="arrow">&#9662;</span>
+          </div>
+          <div class="form-select showlists" *ngIf="showDropdown">
+            <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+            <div class="showlists-item" *ngFor="let client of filteredClient"
+              (click)="selectClient(client); showDropdown = false">
+              <span>{{ client.name }}</span>
+            </div>
+          </div>
+        </div>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' convertir bon Vente')" type="button"
+          (click)="routeBonComm()" class="btn btn-sm btn-warning mx-1 w-auto">Convertir bons en
+          commande</button>
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="card mb-2">
+    <div class="row p-3">
+      <div class="table-responsive border mb-3" style="height: 450px;">
+        <table class="table card-table table-vcenter text-nowrap datatable">
+          <thead>
+            <tr>
+              <th>Numéro</th>
+              <th>Date & Heure</th>
+              <th>Client</th>
+              <th>Total HT</th>
+              <th>Total TTC</th>
+              <th>Net à payer </th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="this.bonService.nbrBon == 0">
+              <td class="font-italic text-center" colspan="8">
+                <marquee behavior="alternate" direction="" class="h3 text-warning">
+                  Aucune vente éffectuée pour le moment...
+                </marquee>
+              </td>
+            </tr>
+            <tr *ngFor="let bon of this.bonService.listBon">
+              <td>{{bon.numero}}</td>
+              <td>{{bon.date_bon}} à {{bon.heure_bon}}</td>
+              <td>{{bon.nom_client}}</td>
+              <td>{{bon.totht | number: '1.0-0'}} F CFA</td>
+              <td>{{bon.totttc | number: '1.0-0'}} F CFA</td>
+              <td>{{bon.net | number: '1.0-0'}} F CFA</td>
+
+              <td>
+                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier bon Vente')"
+                  (click)="editBon(bon)" class="btn btn-sm  btn-outline-warning mx-1">
+                  <i class="fa fa-edit"></i>
+                </a>
+                <a (click)="detail(bon)" class="btn btn-sm btn-outline-primary mx-1"><i class="fa fa-eye"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer d-flex align-items-center" *ngIf="bonService.nbrBon > 100" style="height: 40px;">
+        <p class="m-0 text-muted">Affichage
+          <span *ngIf="page == 1">{{defaultItem}}</span>
+          <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+          <span *ngIf="page != 1 && page == nbrPage">{{nbrBon}}</span>
+          sur <span>{{nbrBon}}</span> Bons
+        </p>
+        <ul class="pagination m-0 ms-auto mt-3">
+          <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+          </pagination-controls>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row p-3">
+      <div class="col-md-8">
+        <label for="basic-url" style="font-weight: 600;" class="form-label mt-2">TOTAL :</label>
+      </div>
+      <div class="col-md-4">
+        <span class="form-control bg-light">{{bonService.totalVente | number: '1.0-0'}} F FCA</span>
+      </div>
+    </div>
+  </div>
+
+</div>

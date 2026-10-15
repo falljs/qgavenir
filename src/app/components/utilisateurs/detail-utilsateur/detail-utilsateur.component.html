@@ -1,0 +1,545 @@
+<div class="container-fluid">
+  <app-menu-utilisateur></app-menu-utilisateur>
+
+  <div class="page-header d-print-none bg-white">
+    <div class="container-fluid">
+      <div class="g-2 align-items-center">
+        <div class="col">
+          <!-- Page pre-title -->
+          <h2 class="page-title justify-content-center text-muted">
+            Détails {{user.prenom}} {{user.nom}}
+          </h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <form [formGroup]="this.formUpdate" (ngSubmit)="onUpdate()">
+      <div class="card mt-3 p-3">
+        <div class="align-items-center mb-3" *ngIf="this.userService.user.id == user.id">
+          <input type="file" accept="image/*" class="d-none" (change)="onSelectFile($event)" id="file">
+          <span *ngIf="user.image" (click)="onSelect()" class="btn avatar avatar-xl rounded"
+            style="background-image: url('{{userService.urlImg+user.image}}')">
+          </span>
+          <span *ngIf="!user.image" (click)="onSelect()" class="btn avatar avatar-xl rounded"
+            style="background-image: url('/assets/img/avatar.png')"></span>
+          <small style="font-size: x-small;">Cliquer pour modifier</small>
+        </div>
+
+        <div class="align-items-center mb-3" *ngIf="this.userService.user.id != user.id">
+          <span *ngIf="user.image" class="avatar avatar-xl rounded"
+            style="background-image: url('{{userService.urlImg+user.image}}')">
+          </span>
+          <span *ngIf="!user.image" class="avatar avatar-xl rounded"
+            style="background-image: url('/assets/img/avatar.png')"></span>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="form-label">Prénom</div>
+            <input type="text" class="form-control" formControlName="prenom" id="prenom">
+            <div *ngIf="fUpdate['prenom'].touched && fUpdate['prenom'].invalid" class="alert alert-danger">
+              <div *ngIf="fUpdate['prenom'].errors && fUpdate['prenom'].errors['required']">Ce champs est requis !</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-label">Nom</div>
+            <input type="text" class="form-control" formControlName="nom" id="nom">
+            <div *ngIf="fUpdate['nom'].touched && fUpdate['nom'].invalid" class="alert alert-danger">
+              <div *ngIf="fUpdate['nom'].errors && fUpdate['nom'].errors['required']">Ce champs est requis !</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="form-label">Adresse</div>
+            <input type="text" class="form-control" formControlName="adresse" id="adresse">
+          </div>
+          <div class="col-md-3">
+            <div class="form-label">Téléphone</div>
+            <input type="text" class="form-control" formControlName="contact" id="contact">
+          </div>
+          <div class="col-md-3">
+            <div class="form-label">Email</div>
+            <input type="text" class="form-control" formControlName="email" id="email">
+          </div>
+          <div class="col-md-3"
+            *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier rôle Utilisateur')">
+            <div class="form-label">Role</div>
+            <select class="form-select" name="role" formControlName="role">
+              <option *ngFor="let role of listeRoles" value="{{role.id}}">{{role.name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3" *ngIf="this.userService.user.id == user.id">
+          <h3 class="card-title mt-4">
+            Changer le mot de passe
+          </h3>
+          <p class="card-subtitle">
+            Cliquez sur le button pour changer le mot de passe.
+          </p>
+        </div>
+        <div class="mb-3 mt-3">
+          <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier mot de passe Utilisateur')"
+            href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-success_update_password_admin"
+            class="btn">
+            Fixer un nouveau mot de passe
+          </a>
+          <a *ngIf="this.userService.user.id == user.id " href="javascript:void(0)" data-bs-toggle="modal"
+            data-bs-target="#modal-success_update_password_user" class="btn">
+            Fixer un nouveau mot de passe
+          </a>
+        </div>
+        <h3 *ngIf="userService.checkPermissionExistence(firstRoleName+ ' bloquer utilisateur Utilisateur')"
+          class="card-title mt-4">Accès</h3>
+        <p *ngIf="userService.checkPermissionExistence(firstRoleName+ ' bloquer utilisateur Utilisateur')"
+          class="card-subtitle">
+          Le fait d'activer ce button donne Accès à {{user.prenom}} {{user.nom}} dans votre application
+        </p>
+        <div *ngIf="userService.checkPermissionExistence(firstRoleName+ ' bloquer utilisateur Utilisateur')">
+          <label class="form-check form-switch form-switch-lg" *ngIf="!user.blocked">
+            <input (change)="blokedUser(user)" class="form-check-input" checked type="checkbox">
+            <span class="form-check-label form-check-label-on">Vous êtes actuellement autorisé</span>
+          </label>
+
+          <label class="form-check form-switch form-switch-lg" *ngIf="user.blocked">
+            <input (change)="blokedUser(user)" class="form-check-input" type="checkbox">
+            <span class="form-check-label form-check-label-of">Vous êtes actuellement bloqué </span>
+          </label>
+        </div>
+
+        <div class="mb-1 mt-2">
+          <span class="float-start">
+            <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer utilisateur Utilisateur')"
+              data-bs-toggle="modal" data-bs-target="#modalDeleteUser" type="button"
+              class="btn btn-danger">Supprimer</button>
+          </span>
+          <span class="float-end"
+            *ngIf="this.userService.user.id == user.id || userService.checkPermissionExistence(firstRoleName+ ' modifier utilisateur Utilisateur')">
+            <button [disabled]="!formUpdate.valid" type="submit" class="btn btn-primary">Mettre à jour</button>
+          </span>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+
+  <div class="main-content  my-4" [hidden]="!user.roles.length"
+    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier permissions utilisateur Utilisateur')">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-light">
+        <div class="mb-0 h3">Modifier les permissions du rôle</div>
+      </div>
+      <div class="card-body">
+
+
+        <!-- Permissions -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Permissions</label>
+        </div>
+
+
+        <div class="card" *ngFor="let module of permissions; let i = index">
+          <div class="card-body">
+            <!-- ID unique pour chaque module -->
+            <div class="accordion" [id]="'accordion-example-' + i">
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    [attr.data-bs-target]="'#collapse-' + i" aria-expanded="false"
+                    [attr.aria-controls]="'collapse-' + i">
+                    <strong>Module : {{ module.module }}</strong>
+                  </button>
+                </h2>
+
+                <div [id]="'collapse-' + i" class="accordion-collapse collapse"
+                  [attr.data-bs-parent]="'#accordion-example-' + i">
+
+                  <div class="card">
+                    <div class="card-header">
+                      <span class="form-check float-end">
+                        <input class="form-check-input" type="checkbox" [(ngModel)]="module.etat"
+                          (change)="toggleAll(i)" [id]="'checkAll-' + i" />
+                        <label class="form-check-label" [for]="'checkAll-' + i">
+                          Tout cocher
+                        </label>
+                      </span>
+                    </div>
+                    <div class="card-body">
+
+
+                      <div class="accordion-body pt-0">
+                        <div class="row">
+                          <div *ngFor="let action of module.options; let j = index" class="col-md-6 col-lg-4 mb-2">
+                            <div class="form-check">
+                              <input class="form-check-input" type="checkbox" [(ngModel)]="action.checked"
+                                (change)="checkIfAllSelected(i)" [id]="'perm-' + i + '-' + j" />
+                              <label class="form-check-label" [for]="'perm-' + i + '-' + j">
+                                {{ action.name }}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Bouton Enregistrer -->
+        <div class="text-end mt-4">
+          <button [disabled]="isDisable " type="button" (click)="updatePermissionUser()" class="btn btn-success px-4">
+            <span *ngIf="!isDisable && !isClick">Mise à jour</span>
+            <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+            <span *ngIf="isDisable && isClick">Chargement...</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Modal Delete User -->
+  <div class="modal modal-blur" id="modalDeleteUser" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-status bg-danger"></div>
+        <div class="modal-body text-center py-4">
+          <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 9v2m0 4v.01" />
+            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+          </svg>
+          <h3>Êtes-vous sûr ?</h3>
+          <div class="text-muted">
+            de vraiment vouloir supprimer cet utilisateur ? Ce que vous avez fait ne peut être annulé !
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="w-100">
+            <div class="row">
+              <div class="col">
+                <button id="cancelDelete" class="btn w-100" data-bs-dismiss="modal">NON</button>
+              </div>
+              <div class="col">
+                <a href="javascript:void(0)" (click)="deleteUser(user.id)" class="btn btn-danger w-100"
+                  data-bs-dismiss="modal">
+                  OUI
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Update Password Admin -->
+  <div class="modal modal-blur" id="modal-success_update_password_admin" data-backdrop="static" data-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true"
+    role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <form [formGroup]="formUpdatePasswordAdmin" (ngSubmit)="updatePasswordAdmin()" autocomplete="off" novalidate>
+        <div class="modal-content">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="modal-status bg-success"></div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-12 mt-2 mb-3">
+                <div class="form-label">Nouveau mot de passe</div>
+                <div class="input-group input-group-flat">
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    placeholder="saisir un mot de passe" formControlName="new_password" id="new_password"
+                    autocomplete="off">
+                  <div
+                    *ngIf="fUpdatePasswordAdmin['new_password'].touched && fUpdatePasswordAdmin['new_password'].invalid"
+                    class="alert alert-danger">
+                    <div
+                      *ngIf="fUpdatePasswordAdmin['new_password'].errors && fUpdatePasswordAdmin['new_password'].errors['required']">
+                      ce champs est requis.</div>
+                  </div>
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path
+                          d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                      </svg>
+                    </a>
+                  </span>
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="!showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye-off" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M3 3l18 18"></path>
+                        <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"></path>
+                        <path
+                          d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341">
+                        </path>
+                      </svg> </a>
+                  </span>
+                </div>
+              </div>
+
+              <div class="col-md-12 mt-2 mb-3">
+                <div class="form-label">Confirmé le mot de passe</div>
+                <div class="input-group input-group-flat">
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    placeholder="Confirmé le mot de passe" formControlName="confirme_password" id="confirme_password"
+                    autocomplete="off">
+                  <div
+                    *ngIf="fUpdatePasswordAdmin['confirme_password'].touched && fUpdatePasswordAdmin['confirme_password'].invalid"
+                    class="alert alert-danger">
+                    <div
+                      *ngIf="fUpdatePasswordAdmin['confirme_password'].errors && fUpdatePasswordAdmin['confirme_password'].errors['required']">
+                      ce champs est requis.</div>
+                  </div>
+                  <div *ngIf="fUpdatePasswordAdmin['confirme_password'].touched && msgErrorConfirme_password"
+                    class="alert alert-danger">
+                    <div>{{msgErrorConfirme_password}}</div>
+                  </div>
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path
+                          d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                      </svg>
+                    </a>
+                  </span>
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="!showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye-off" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M3 3l18 18"></path>
+                        <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"></path>
+                        <path
+                          d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341">
+                        </path>
+                      </svg> </a>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="w-100">
+              <div class="row">
+                <div class="col">
+                  <button type="button" class="btn w-100" data-bs-dismiss="modal">
+                    Annuler
+                  </button>
+                </div>
+                <div class="col">
+                  <button type="submit" class="btn btn-success w-100" [disabled]="!formUpdatePasswordAdmin.valid">
+                    Modifier
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Update Password User -->
+  <div class="modal modal-blur" id="modal-success_update_password_user" data-backdrop="static" data-keyboard="false"
+    tabindex="-1" aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true"
+    role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <form [formGroup]="formUpdatePasswordUser" (ngSubmit)="updatePasswordUser()" autocomplete="off" novalidate>
+        <div class="modal-content">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <div class="modal-status bg-success"></div>
+          <div class="modal-body">
+            <div class="row">
+
+              <div class="col-md-12 mt-2 mb-3">
+                <div class="form-label">Ancien mot de passe</div>
+                <div class="input-group input-group-flat">
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    placeholder="saisir ancien mot de passe" formControlName="old_password_user" id="old_password_user"
+                    autocomplete="off">
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path
+                          d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                      </svg>
+                    </a>
+                  </span>
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="!showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye-off" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M3 3l18 18"></path>
+                        <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"></path>
+                        <path
+                          d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341">
+                        </path>
+                      </svg> </a>
+                  </span>
+                </div>
+                <div
+                  *ngIf="fUpdatePasswordUser['old_password_user'].touched && fUpdatePasswordUser['old_password_user'].invalid"
+                  class="alert alert-danger">
+                  <div
+                    *ngIf="fUpdatePasswordUser['old_password_user'].errors && fUpdatePasswordUser['old_password_user'].errors['required']">
+                    ce champs est requis.</div>
+                </div>
+                <div *ngIf="msgErrorAncien_password" class="alert alert-danger">
+                  <div>{{msgErrorAncien_password}}</div>
+                </div>
+
+              </div>
+
+              <div class="col-md-12 mt-2 mb-3">
+                <div class="form-label">Nouveau mot de passe</div>
+                <div class="input-group input-group-flat">
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    placeholder="saisir un mot de passe" formControlName="new_password_user" id="new_password_user"
+                    autocomplete="off">
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path
+                          d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                      </svg>
+                    </a>
+                  </span>
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="!showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye-off" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M3 3l18 18"></path>
+                        <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"></path>
+                        <path
+                          d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341">
+                        </path>
+                      </svg> </a>
+                  </span>
+                </div>
+                <div
+                  *ngIf="fUpdatePasswordUser['new_password_user'].touched && fUpdatePasswordUser['new_password_user'].invalid"
+                  class="alert alert-danger">
+                  <div
+                    *ngIf="fUpdatePasswordUser['new_password_user'].errors && fUpdatePasswordUser['new_password_user'].errors['required']">
+                    ce champs est requis.</div>
+                </div>
+              </div>
+
+              <div class="col-md-12 mt-2 mb-3">
+                <div class="form-label">Confirmé le mot de passe</div>
+                <div class="input-group input-group-flat">
+                  <input [type]="showPassword ? 'text' : 'password'" class="form-control"
+                    placeholder="Confirmé le mot de passe" formControlName="confirme_password_user"
+                    id="confirme_password_user" autocomplete="off">
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                        stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path
+                          d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                      </svg>
+                    </a>
+                  </span>
+                  <span class="input-group-text" (click)="showHidePwd()" [hidden]="!showPassword">
+                    <a href="javascript:void(0)" class="link-secondary" title="Show password"
+                      data-bs-toggle="tooltip"><!-- Download SVG icon from http://tabler-icons.io/i/eye -->
+                      <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye-off" width="24"
+                        height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M3 3l18 18"></path>
+                        <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"></path>
+                        <path
+                          d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175 4.632 -5.341">
+                        </path>
+                      </svg> </a>
+                  </span>
+                </div>
+              </div>
+              <div
+                *ngIf="fUpdatePasswordUser['confirme_password_user'].touched && fUpdatePasswordUser['confirme_password_user'].invalid"
+                class="alert alert-danger">
+                <div
+                  *ngIf="fUpdatePasswordUser['confirme_password_user'].errors && fUpdatePasswordUser['confirme_password_user'].errors['required']">
+                  ce champs est requis.</div>
+              </div>
+              <div *ngIf="fUpdatePasswordUser['confirme_password_user'].touched && msgErrorConfirme_password"
+                class="alert alert-danger">
+                <div>{{msgErrorConfirme_password}}</div>
+              </div>
+
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="w-100">
+              <div class="row">
+                <div class="col">
+                  <button type="button" class="btn w-100" data-bs-dismiss="modal">
+                    Annuler
+                  </button>
+                </div>
+                <div class="col">
+                  <button type="submit" class="btn btn-success w-100" [disabled]="!formUpdatePasswordUser.valid">
+                    Modifier
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

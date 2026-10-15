@@ -1,0 +1,164 @@
+<div class="card bg-transparent border-none mb-2 container-fluid">
+    <div class="btn-group mb-2 mt-2 table-responsive" role="group">
+        <button type="button" (click)="printMouvenement(mouvement)"
+            class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4">Imprimer</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier mouvement Stock')"
+            (click)="modifier(mouvement)" type="button" class="btn btn-outline-info alert alert-info btn-sm mx-3"><span
+                class="h4">Modifier</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer mouvement Stock')" type="button"
+            data-bs-toggle="modal" data-bs-target="#modalDeleteMouvement"
+            class="btn btn-outline-danger alert alert-danger btn-sm mx-3"><span class="h4">Supprimer</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' annuler mouvement Stock')" type="button"
+            data-bs-toggle="modal" data-bs-target="#modalCancelMouvement"
+            class="btn btn-outline-danger alert alert-danger  btn-sm mx-3"><span class="h4">Annuler</span>
+        </button>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">N° Mouvement</label>
+                <span class="form-control bg-light">{{mouvement.numero}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Date du Mouvement</label>
+                <span class="form-control bg-light">{{ mouvement.created_at | date:"d-MM-y à H:mm" }}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Responsable du Mouvement</label>
+                <span class="form-control bg-light">{{mouvement.responsable}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Le Gestionnaire </label>
+                <span class="form-control bg-light">{{mouvement.auteur}}</span>
+            </div>
+        </div>
+
+
+        <div class="col-md-12">
+            <div class="card h3 text-center">Liste Produits</div>
+            <div class="table-responsive border mb-3">
+                <div style="overflow-y:scroll;max-height:250px;" id="pdfTable" #pdftable="">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Produit</th>
+                                <th scope="col">Dépôt</th>
+                                <th scope="col">Quantité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let mouvement of this.ligneMouvement ;let i = index;">
+                                <td>{{mouvement.produit}}</td>
+                                <td>{{mouvement.entrepot}}</td>
+                                <td>{{mouvement.qty}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<!-- Modal Delete Ligne Rglementy -->
+<div class="modal modal-blur" id="modalDeleteMouvement" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer le mouvement ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteMouvement(mouvement.id)"
+                                class="btn btn-danger w-100" data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancel Commande -->
+<div class="modal modal-blur" id="modalCancelMouvement" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir annuler le mouvement ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="annulerMouvement(mouvement.id)"
+                                class="btn btn-danger w-100" data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

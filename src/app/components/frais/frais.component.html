@@ -1,0 +1,162 @@
+<div class="container-fluid">
+
+  <div class="row row-deck row-cards">
+
+    <app-menu-dashboard></app-menu-dashboard>
+
+    <!--Liste des voiture-->
+    <div class="col-md-12">
+      <div class="card bg-light">
+        <div class="card-header bg-white">
+          <h3 class="card-title">Liste des Frais</h3>
+        </div>
+        <div class="card mb-1 p-1">
+          <fieldset>
+            <div class="input-group mb-1">
+              <a href="javascript:void(0)" (click)="getFrais()" class="btn btn-primary mx-1">
+                Tous les frais
+              </a>
+              <span class="input-group-text mx-1" id="basic-addon1">Rechercher par date</span>
+              <input onfocus="(this.type='date')" (change)="onChangeDate($event.target)" name="dateChange" type="text"
+                class="form-control  mx-1" placeholder="Recherche par date" />
+              <br>
+              <span class="input-group-text" id="basic-addon1">Afficher par intervale </span>
+              <input onfocus="(this.type='date')" (change)="onChangeDate1($event.target)" name="date" type="text"
+                class="form-control mx-1 mt-1" placeholder="Date debut" />
+              <input onfocus="(this.type='date')" (change)="onChangeDate2($event.target)" name="date" type="text"
+                class="form-control mx-1 mt-1" placeholder="Date fin" [disabled]="!isDate2" />
+            </div>
+          </fieldset>
+        </div>
+        <div class="card mb-2">
+          <div class="row p-3">
+            <div class="table-responsive bg-white mb-3">
+              <table class="table card-table">
+                <thead>
+                  <tr>
+                    <th>Date de création</th>
+                    <th>Auteur</th>
+                    <th>Description</th>
+                    <th>Solde</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="let frais of fraiss | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrFrais }">
+                    <td>{{frais.created_at | date:"dd-MM-y à H:mm"}}</td>
+                    <td>{{frais.auteur}}</td>
+                    <td>{{frais.desc}}</td>
+                    <td>{{frais.montant | number: '1.0-0'}} F CFA</td>
+                    <td>
+                      <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer frais Tableau de bord')"
+                        class="btn btn-sm text-danger mx-2" (click)="openModalDelete(frais.id)" data-bs-toggle="modal"
+                        data-bs-target="#modal-danger">
+                        <i class="fa fa-trash"></i>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer d-flex align-items-center" style="height: 40px;">
+              <p class="m-0 text-muted">Affichage
+                <span *ngIf="page == 1">{{defaultItem}}</span>
+                <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+                <span *ngIf="page != 1 && page == nbrPage">{{nbrFrais}}</span>
+                sur <span>{{nbrFrais}}</span> frais
+              </p>
+              <ul class="pagination m-0 ms-auto mt-3">
+                <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+                </pagination-controls>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="p-3">
+        <div class="input-group mb-2">
+          <span class="form-control bg-light float-start mx-3">Total Frais :</span>
+          <span class="form-control bg-light text-center float-end mx-3">{{totalFrais | number: '1.0-0'}} F FCA</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal New Car -->
+  <div class="modal modal-blur" id="modal-frais" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Ajouter un Frais</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+            <div class="mb-3">
+              <label class="form-label">Solde</label>
+              <input type="text" class="form-control" placeholder="Somme" formControlName="montant" id="montant">
+              <div *ngIf="f['montant'].touched && f['montant'].invalid" class="alert alert-danger">
+                <div *ngIf="f['montant'].errors && f['montant'].errors['required']">Donner la somme svp !</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Description</label>
+              <input type="text" class="form-control" placeholder="Description" formControlName="desc" id="desc">
+              <div *ngIf="f['desc'].touched && f['desc'].invalid" class="alert alert-danger">
+                <div *ngIf="f['desc'].errors && f['desc'].errors['required']">Dites au moins quelque chose !</div>
+              </div>
+            </div>
+            <div class="mb-2">
+              <button type="button" class="btn btn-danger" style="float: left;" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-success" style="float: right;"
+                [disabled]="!form.valid">Enregistrer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Delete Car -->
+  <div class="modal modal-blur" id="modal-danger" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-status bg-danger"></div>
+        <div class="modal-body text-center py-4">
+          <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M12 9v2m0 4v.01" />
+            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+          </svg>
+          <h3>Êtes-vous sûr ?</h3>
+          <div class="text-muted">
+            Voulez-vous vraiment supprimer ce frais ? Ce que vous avez fait ne peut être annulé.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <div class="w-100">
+            <div class="row">
+              <div class="col">
+                <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+              </div>
+              <div class="col">
+                <a href="javascript:void(0)" (click)="deleteFrais()" class="btn btn-danger w-100"
+                  data-bs-dismiss="modal">
+                  OUI
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

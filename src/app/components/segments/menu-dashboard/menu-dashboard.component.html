@@ -1,0 +1,31 @@
+<div class="card container-fluid mb-2 table-responsive pb-3">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+                <li *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir statistique Tableau de bord')"
+                    class="nav-item" role="presentation">
+                    <a href="javascript:void(0)" routerLink='/accueil' class="nav-link"
+                        [ngClass]="{ 'active': router.url === '/accueil' }" data-bs-toggle="tab" aria-selected="true"
+                        role="tab">Statistiques</a>
+                </li>
+
+                <li *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir rapport Tableau de bord')"
+                    class="nav-item" role="presentation">
+                    <a href="javascript:void(0)" routerLink='/rapport' class="nav-link"
+                        [ngClass]="{ 'active': router.url === '/rapport' }" data-bs-toggle="tab" aria-selected="false"
+                        role="tab" tabindex="-1">Rapports</a>
+                </li>
+
+                <li *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir frais Tableau de bord')"
+                    class="nav-item" role="presentation">
+                    <a href="javascript:void(0)" routerLink='/frais' class="nav-link"
+                        [ngClass]="{ 'active': router.url === '/frais' }" data-bs-toggle="tab" aria-selected="false"
+                        role="tab" tabindex="-1">Frais</a>
+                </li>
+            </ul>
+            <a *ngIf="router.url === '/frais' && userService.checkPermissionExistence(firstRoleName+ ' créer frais Tableau de bord')"
+                href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modal-frais"
+                class="btn btn-success mx-1 w-auto">Nouveau frais</a>
+        </div>
+    </div>
+</div>

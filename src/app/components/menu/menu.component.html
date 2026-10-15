@@ -1,0 +1,379 @@
+<!-- ============================= -->
+<!-- OVERLAY MOBILE -->
+<!-- ============================= -->
+
+<div class="sidebar-overlay" [class.show]="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+
+<!-- ============================= -->
+<!-- HEADER -->
+<!-- ============================= -->
+
+<header class="topbar">
+
+  <div class="topbar-left">
+
+    <!-- Bouton mobile -->
+    <button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Ouvrir le menu"
+      [attr.aria-expanded]="mobileMenuOpen">
+      <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Bouton collapse desktop -->
+    <button class="sidebar-toggle" (click)="toggleSidebar()"
+      [attr.aria-label]="sidebarCollapsed ? 'Déplier le menu' : 'Réduire le menu'"
+      [attr.aria-expanded]="!sidebarCollapsed" [title]="sidebarCollapsed ? 'Déplier le menu' : 'Réduire le menu'">
+      <i class="fa" [ngClass]="sidebarCollapsed ? 'fa-angle-right' : 'fa-angle-left'"></i>
+    </button>
+
+    <div class="topbar-title">
+      <span class="title">IconeStock</span>
+    </div>
+
+  </div>
+
+
+  <div class="topbar-right">
+
+    <!-- ACTIONS RAPIDES -->
+    <div class="nav-item dropdown quick-action" *ngIf="hasAnyQuickAction()">
+
+      <button class="quick-action-btn" data-bs-toggle="dropdown" aria-label="Créer" title="Créer">
+        <i class="fa fa-plus"></i>
+        <span class="quick-action-btn__label">Créer</span>
+        <i class="fa fa-chevron-down quick-action-btn__chevron"></i>
+      </button>
+
+      <div class="dropdown-menu quick-action-panel">
+        <ng-container *ngFor="let action of quickActions">
+          <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' ' + action.permission)"
+            [routerLink]="action.route" class="quick-action-item">
+            <span class="quick-action-item__icon"><i class="fa" [ngClass]="action.icon"></i></span>
+            <span>{{ action.label }}</span>
+          </a>
+        </ng-container>
+      </div>
+
+    </div>
+
+    <!-- CALCULATRICE -->
+    <div class="nav-item dropdown">
+
+      <button class="topbar-action" data-bs-toggle="dropdown" data-bs-auto-close="outside" title="Calculatrice"
+        aria-label="Ouvrir la calculatrice">
+        <i class="fa fa-calculator"></i>
+      </button>
+
+      <div class="dropdown-menu calculator-dropdown">
+        <div class="dgb-calc-box">
+
+          <input type="text" class="calc-display" [value]="result" placeholder="0" readonly
+            aria-label="Résultat de la calculatrice">
+
+          <div class="calc-grid">
+            <button class="calc-btn danger" (click)="clearAll()">C</button>
+            <button class="calc-btn secondary" (click)="clearEntry()">CE</button>
+            <button class="calc-btn operator" (click)="append('/')">÷</button>
+            <button class="calc-btn operator" (click)="append('*')">×</button>
+
+            <button class="calc-btn" (click)="append('7')">7</button>
+            <button class="calc-btn" (click)="append('8')">8</button>
+            <button class="calc-btn" (click)="append('9')">9</button>
+            <button class="calc-btn operator" (click)="append('-')">−</button>
+
+            <button class="calc-btn" (click)="append('4')">4</button>
+            <button class="calc-btn" (click)="append('5')">5</button>
+            <button class="calc-btn" (click)="append('6')">6</button>
+            <button class="calc-btn operator" (click)="append('+')">+</button>
+
+            <button class="calc-btn" (click)="append('1')">1</button>
+            <button class="calc-btn" (click)="append('2')">2</button>
+            <button class="calc-btn" (click)="append('3')">3</button>
+            <button class="calc-btn equals" (click)="calculate()">=</button>
+
+            <button class="calc-btn zero" (click)="append('0')">0</button>
+            <button class="calc-btn" (click)="append('.')">.</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- NOTIFICATIONS -->
+    <div class="nav-item dropdown"
+      *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir notification Entête')">
+
+      <button class="topbar-action notification-btn" data-bs-toggle="dropdown" aria-label="Notifications">
+        <i class="fa fa-bell"></i>
+        <span *ngIf="total_pending > 0" class="notification-badge">{{ total_pending }}</span>
+      </button>
+
+      <div class="dropdown-menu dropdown-menu-end notification-dropdown">
+
+        <div class="notification-header">
+          <strong>Notifications</strong>
+          <span *ngIf="total_pending > 0" class="badge bg-danger">{{ total_pending }}</span>
+        </div>
+
+        <div class="notification-list">
+
+          <div *ngFor="let notification of notifications; trackBy: trackByNotifId" class="notification-item"
+            (click)="onNotificationClick(notification)">
+
+            <div class="notification-icon">
+              <i class="fa fa-bell"></i>
+            </div>
+
+            <div class="notification-content">
+              <strong>Rappel</strong>
+              <p>
+                {{ notification.message }}
+                <span *ngIf="notification.order.restant == 0" class="status-tag status-tag--ok">Payé</span>
+                <span *ngIf="notification.order.versement != 0 && notification.order.restant != 0"
+                  class="status-tag status-tag--warn">En Cours</span>
+                <span *ngIf="notification.order.versement == 0 && notification.order.restant != 0"
+                  class="status-tag status-tag--danger">Non Payé</span>
+              </p>
+            </div>
+
+          </div>
+
+          <div *ngIf="!isLoading && notifications.length === 0" class="empty-notification">
+            Aucune notification
+          </div>
+
+        </div>
+
+        <div class="notification-footer">
+          <button class="btn-link-plain" (click)="all()">Voir toutes les notifications</button>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- UTILISATEUR -->
+    <div class="nav-item dropdown">
+
+      <button class="user-profile" data-bs-toggle="dropdown" aria-label="Ouvrir le menu utilisateur">
+
+        <span *ngIf="userService.user.image" class="user-avatar"
+          [style.background-image]="'url(' + userService.urlImg + userService.user.image + ')'"></span>
+
+        <span *ngIf="!userService.user.image" class="user-avatar default-avatar">
+          {{ userName?.charAt(0) }}
+        </span>
+
+        <div class="user-info">
+          <strong>{{ userName }}</strong>
+          <small>{{ role }}</small>
+        </div>
+
+        <i class="fa fa-chevron-down"></i>
+      </button>
+
+      <div class="dropdown-menu dropdown-menu-end user-dropdown">
+        <a routerLink="/parametre" class="dropdown-item">
+          <i class="fa fa-cog mx-2"></i> Paramètres
+        </a>
+        <div class="dropdown-divider"></div>
+        <a href="javascript:void(0)" class="dropdown-item logout" (click)="logout()">
+          <i class="fa fa-power-off mx-2"></i> Déconnexion
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+</header>
+
+<!-- ============================= -->
+<!-- SIDEBAR -->
+<!-- ============================= -->
+
+<aside class="modern-sidebar" [class.collapsed]="sidebarCollapsed" [class.mobile-open]="mobileMenuOpen">
+
+  <!-- LOGO -->
+  <div class="sidebar-brand">
+    <a href="javascript:void(0)" routerLink="/accueil" class="brand-link">
+      <div class="brand-logo">
+        <img src="/assets/img/Icone_Stock_logo.png" alt="IconeStock">
+      </div>
+      <div class="brand-text" *ngIf="!sidebarCollapsed">
+        <strong>IconeStock</strong>
+        <small>Gestion de stock</small>
+      </div>
+    </a>
+  </div>
+
+  <!-- MENU -->
+  <nav class="sidebar-menu" role="navigation" aria-label="Menu principal">
+
+    <!-- DASHBOARD -->
+    <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Tableau de bord')"
+      routerLink="/accueil" routerLinkActive="active" class="menu-link" title="Tableau de bord">
+      <span class="menu-icon"><i class="fa fa-tachometer"></i></span>
+      <span class="menu-label">Tableau de bord</span>
+    </a>
+
+    <!-- DOSSIERS -->
+    <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Dossier')" routerLink="/dossier"
+      routerLinkActive="active" class="menu-link" title="Dossiers">
+      <span class="menu-icon"><i class="fa fa-folder"></i></span>
+      <span class="menu-label">Dossiers</span>
+    </a>
+
+    <!-- VENTE -->
+    <div class="menu-group" *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Vente')">
+      <button class="menu-link menu-parent" [class.open]="isMenuOpen('vente')" (click)="toggleSubMenu('vente')"
+        title="Vente" aria-label="Vente" [attr.aria-expanded]="isMenuOpen('vente')">
+        <span class="menu-icon"><i class="fa fa-shopping-cart"></i></span>
+        <span class="menu-label">Vente</span>
+        <i class="fa fa-chevron-down menu-arrow"></i>
+      </button>
+
+      <div class="submenu" [class.open]="isMenuOpen('vente')">
+        <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' créer facture et devis Vente')"
+          routerLink="/vente" routerLinkActive="active" class="submenu-link">
+          <i class="fa fa-plus-circle"></i><span>Créer une vente</span>
+        </a>
+        <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir facture Vente')" routerLink="/ticket"
+          routerLinkActive="active" class="submenu-link">
+          <i class="fa fa-file-text"></i><span>Factures</span>
+        </a>
+        <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir devis Vente')" routerLink="/devis"
+          routerLinkActive="active" class="submenu-link">
+          <i class="fa fa-file"></i><span>Devis</span>
+        </a>
+        <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir bon Vente')" routerLink="/bon"
+          routerLinkActive="active" class="submenu-link">
+          <i class="fa fa-ticket"></i><span>Bons</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ACHAT -->
+    <div class="menu-group" *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Achat')">
+      <button class="menu-link menu-parent" [class.open]="isMenuOpen('achat')" (click)="toggleSubMenu('achat')"
+        title="Achat" aria-label="Achat" [attr.aria-expanded]="isMenuOpen('achat')">
+        <span class="menu-icon"><i class="fa fa-cart-arrow-down"></i></span>
+        <span class="menu-label">Achat</span>
+        <i class="fa fa-chevron-down menu-arrow"></i>
+      </button>
+
+      <div class="submenu" [class.open]="isMenuOpen('achat')">
+        <a routerLink="/achat-nouveau" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' créer achat Achat')">
+          <i class="fa fa-plus-circle"></i>Nouveau achat
+        </a>
+        <a routerLink="/achat" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir facture achat Achat')">
+          <i class="fa fa-file-text"></i>Factures achat
+        </a>
+        <a routerLink="/bon-achat" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir bon achat Achat')">
+          <i class="fa fa-ticket"></i>Bons d'achat
+        </a>
+      </div>
+    </div>
+
+    <!-- CRM -->
+    <div class="menu-group" *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès CRM')">
+      <button class="menu-link menu-parent" [class.open]="isMenuOpen('crm')" (click)="toggleSubMenu('crm')" title="CRM"
+        aria-label="CRM" [attr.aria-expanded]="isMenuOpen('crm')">
+        <span class="menu-icon"><i class="fa fa-users"></i></span>
+        <span class="menu-label">CRM</span>
+        <i class="fa fa-chevron-down menu-arrow"></i>
+      </button>
+
+      <div class="submenu" [class.open]="isMenuOpen('crm')">
+        <a routerLink="/client" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir client CRM')">
+          <i class="fa fa-user"></i>Clients
+        </a>
+        <a routerLink="/fournisseur" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir fournisseur CRM')">
+          <i class="fa fa-truck"></i>Fournisseurs
+        </a>
+      </div>
+    </div>
+
+    <!-- STOCK -->
+    <div class="menu-group" *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Stock')">
+      <button class="menu-link menu-parent" [class.open]="isMenuOpen('stock')" (click)="toggleSubMenu('stock')"
+        title="Stock" aria-label="Stock" [attr.aria-expanded]="isMenuOpen('stock')">
+        <span class="menu-icon"><i class="fa fa-cubes"></i></span>
+        <span class="menu-label">Stock</span>
+        <i class="fa fa-chevron-down menu-arrow"></i>
+      </button>
+
+      <!-- FIX : chaque sous-lien avait perdu sa vérification de permission -->
+      <div class="submenu" [class.open]="isMenuOpen('stock')">
+        <a routerLink="/produit" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir produit Stock')">
+          <i class="fa fa-archive"></i>Produits
+        </a>
+        <a routerLink="/mouvement-list" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir mouvement Stock')">
+          <i class="fa fa-exchange"></i>Mouvements
+        </a>
+        <!--a routerLink="/mouvement-list-place" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir mouvement place Stock')">
+          <i class="fa fa-random"></i>Mouvements place
+        </a-->
+        <a routerLink="/depot_I" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir depôt Stock')">
+          <i class="fa fa-building"></i>Dépôts
+        </a>
+        <a routerLink="/inventaires" routerLinkActive="active" class="submenu-link"
+          *ngIf="userService.checkPermissionExistence(firstRoleName + ' voir inventaire Stock')">
+          <i class="fa fa-list"></i>Inventaire
+        </a>
+      </div>
+    </div>
+
+    <!-- AUTRES -->
+    <div class="menu-section" *ngIf="!sidebarCollapsed">
+      <span>Administration</span>
+    </div>
+
+    <!-- FIX : ces 4 liens n'avaient plus aucune vérification de permission -->
+    <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Compte')" routerLink="/compte"
+      routerLinkActive="active" class="menu-link" title="Compte">
+      <span class="menu-icon"><i class="fa fa-credit-card"></i></span>
+      <span class="menu-label">Compte</span>
+    </a>
+
+    <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Utilisateur')"
+      routerLink="/utilisateur" routerLinkActive="active" class="menu-link" title="Utilisateurs">
+      <span class="menu-icon"><i class="fa fa-users"></i></span>
+      <span class="menu-label">Utilisateurs</span>
+    </a>
+
+    <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Caisse')" routerLink="/caisse"
+      routerLinkActive="active" class="menu-link" title="Caisse">
+      <span class="menu-icon"><i class="fa fa-money"></i></span>
+      <span class="menu-label">Caisse</span>
+    </a>
+
+    <a *ngIf="userService.checkPermissionExistence(firstRoleName + ' avoir accès Corbeille')" routerLink="/corbeille"
+      routerLinkActive="active" class="menu-link danger-link" title="Corbeille">
+      <span class="menu-icon"><i class="fa fa-trash"></i></span>
+      <span class="menu-label">Corbeille</span>
+    </a>
+
+  </nav>
+
+  <!-- FOOTER -->
+  <div class="sidebar-footer">
+    <button class="logout-btn" (click)="logout()" title="Déconnexion" aria-label="Déconnexion">
+      <i class="fa fa-power-off"></i>
+      <span class="menu-label">Déconnexion</span>
+    </button>
+  </div>
+
+</aside>

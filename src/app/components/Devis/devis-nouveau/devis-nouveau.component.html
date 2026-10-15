@@ -1,0 +1,303 @@
+<div class="container-fluid">
+    <div class="card p-2">
+
+        <!-- Liste  -->
+        <div class="row mb-2 mt-2">
+            <div class="col-md">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">N° Devis</label>
+                    <input value="{{devisService.maxId}}" type="text" class="form-control bg-light" id="basic-url">
+                </div>
+            </div>
+
+            <div class="col-md-2">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Date Deivs</label>
+                    <input type="text" [(ngModel)]="date_devis" name="date_comm" class="form-control bg-light"
+                        id="basic-url">
+                </div>
+            </div>
+
+
+            <div class="col-md-3">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Client</label>
+                    <div class="input-group">
+                        <input [(ngModel)]="id_client" name="id_client" class="form-control" type="hidden">
+                        <input list="clients" name="client" id="client" value="{{this.client}}" class="form-control"
+                            (change)="OnChangeClient($event.target)">
+                        <datalist id="clients">
+                            <option *ngFor="let client of this.clientService.listClient" value="{{client.name}}">
+                        </datalist>
+                        <button (click)="openClient()" data-bs-toggle="modal" data-bs-target="#modalClient"
+                            class="btn mx-1"><i class="fa fa-plus"></i></button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="mb-1">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Dossier</label>
+                    <div class="input-group">
+                        <select disabled class="form-select" [(ngModel)]="numDos" name="numDos">
+                            <option value="1">-- Non classée --</option>
+                            <option *ngFor="let dossier of this.dossierService.listDossiers" value="{{dossier.id}}"
+                                [hidden]="dossier.id == 1">
+                                {{dossier.nom}}
+                            </option>
+                        </select>
+                        <button hidden (click)="openDossier()" data-bs-toggle="modal" data-bs-target="#modalDossier"
+                            class="btn mx-1"><i class="fa fa-plus"></i></button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md">
+                <div class="mb-3">
+                    <label for="basic-url" style="font-weight: 600;" class="form-label">Type de devis</label>
+                    <input type="text" [(ngModel)]="type" name="type" class="form-control" id="basic-url">
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-light mb-2">
+            <span class="input-group-text">
+                <input type="text" id="InputDesign" (keyup)="searchDesignation()" placeholder="Designation"
+                    class="form-control mx-2">
+                <input type="text" id="InputMifa" (keyup)="searchFamille()" placeholder="Famille"
+                    class="form-control mx-2">
+                <input type="text" id="InputRef" (keyup)="searchReference()" placeholder="Réference"
+                    class="form-control mx-2">
+            </span>
+        </div>
+
+        <!-- Liste Produit -->
+        <div class="row mb-3" style="width: 100%; height: 450px;">
+            <as-split direction="horizontal">
+                <as-split-area [size]="60">
+                    <div class="table-scroll-container table-responsive">
+                        <table class="table" id="tableProduit">
+                            <thead class="sticky-top">
+                                <tr>
+                                    <th>
+                                        <select (change)="onChangeVente($event)">
+                                            <option value="detail">Détail</option>
+                                            <option value="gros">Gros</option>
+                                        </select>
+                                    </th>
+                                    <th>Article</th>
+                                    <th>Qty</th>
+                                    <th>Prix</th>
+                                    <th>Prix en gros</th>
+                                    <th>Famille</th>
+                                    <th>Reférence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let produit of this.produitService.listProduits">
+
+                                    <td *ngIf=" typeVente =='detail' ">
+                                        <input id="checkbox" *ngIf="produit.qty >0" type="checkbox"
+                                            [(ngModel)]="produit.isselected" name="{{produit}}"
+                                            (change)="onchange(produit)">
+                                        <input *ngIf="produit.qty <=0" type="checkbox" disabled>
+                                    </td>
+
+                                    <td *ngIf=" typeVente =='gros' ">
+                                        <input id="checkbox" *ngIf="produit.qty >0" type="checkbox"
+                                            [(ngModel)]="produit.isselected" name="{{produit}}"
+                                            (change)="onchangeGros(produit)">
+                                        <input *ngIf="produit.qty <=0" type="checkbox" disabled>
+                                    </td>
+
+                                    <td>{{produit.designation}}</td>
+                                    <td *ngIf="produit.qty <= 0" style="background-color: rgba(255, 0, 0, 0.267);">
+                                        {{produit.qty}}</td>
+                                    <td *ngIf="produit.qty > 0">{{produit.qty}}</td>
+                                    <td>{{produit.prix | number: '1.0-0'}}</td>
+                                    <td>{{produit.prix_gros | number: '1.0-0'}}</td>
+                                    <td>{{produit.famille}}</td>
+                                    <td>{{produit.ref}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </as-split-area>
+                <as-split-area [size]="60">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Désignation</th>
+                                    <th>Pu</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                    <th>Option</th>
+                                    <th>
+                                        <a (click)="removeLcmd()"> <i class="fa fa-trash fa-2x"></i> </a>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="this.ligneDevisService.listLigneDevis.length == 0"
+                                    [class.text-danger]="!isValid && this.ligneDevisService.listLigneDevis.length ==0">
+                                    <td class="font-italic text-center" colspan="5">
+                                        <marquee behavior="alternate" direction="" class="h3 text-warning"> Aucun
+                                            produit sélectionné...</marquee>
+                                    </td>
+                                </tr>
+                                <tr id="myTable"
+                                    *ngFor="let lc of this.ligneDevisService.listLigneDevis ;let i = index;">
+                                    <td>{{lc.produit}}</td>
+                                    <td>
+                                        <span *ngIf="!lc.editable">{{lc.prix | number: '1.0-0'}}</span>
+                                        <input size="3" type="number" class="form-control" [(ngModel)]="lc.prix"
+                                            name="prix" *ngIf="lc.editable" />
+                                    </td>
+                                    <td class="input-group">
+                                        <button [disabled]="lc.qty == 0.5 || editeLigne"
+                                            class="btn btn-sm btn-light mx-1" (click)="decremente(lc)">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                        <span class="mx-1" *ngIf="!lc.editable">{{lc.qty}}</span>
+                                        <input size="2" type="number" class="form-control form-control-sm-2 "
+                                            [(ngModel)]="lc.qty" name="qty" *ngIf="lc.editable" />
+                                        <button [disabled]="editeLigne" class="btn btn-sm btn-light mx-1"
+                                            (click)="incremente(lc)">
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                    </td>
+                                    <td>{{lc.totht | number: '1.0-0'}}</td>
+                                    <td>
+                                        <button [disabled]="editeLigne" *ngIf="!lc.editable" (click)="editDomain(lc)"
+                                            class="btn btn-sm btn-outline-warning mx-1"><i
+                                                class="fa fa-edit"></i></button>
+                                        <button *ngIf="lc.editable" (click)="editDomainValid(lc)"
+                                            class="btn btn-sm btn-outline-success mx-1"><i
+                                                class="fa fa-check"></i></button>
+                                        <button [disabled]="editeLigne" (click)="deleteLigneDevis(lc.codeProduit)"
+                                            class="btn btn-sm btn-outline-danger mx-1"><i
+                                                class="fa fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </as-split-area>
+            </as-split>
+        </div>
+
+    </div>
+
+    <div class="card p-2 mt-2 mb-2">
+        <div class="row">
+            <!-- Details Regelement  -->
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total Ht : </label>
+                    <input type="text" class="form-control" [(ngModel)]="totht" name="totht" readonly>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total Tva :</label>
+                    <select class="form-control" (change)="getTtc()" [(ngModel)]="tottva" name="tottva">
+                        <option value="0">0.0%</option>
+                        <option value="18">18%</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Total TTC : </label>
+                    <input type="text" class="form-control" [(ngModel)]="totttc" name="totttc" readonly>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label></label>
+                    <label for="basic-url" class="mb-1" style="font-weight: 600;">Net à payer : </label>
+                    <input type="text" class="form-control" [(ngModel)]="net" name="net" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- button submit -->
+    <div class="row mb-1">
+        <div class="mb-1 mt-2">
+            <span class="float-start">
+                <button routerLink="/devis" type="button" class="btn btn-dark">Annuler</button>
+            </span>
+            <span class="float-end">
+                <button [disabled]="isDisable || editeLigne || this.ligneDevisService.listLigneDevis.length == 0"
+                    type="button" (click)="onSubmitCommande()" class="btn btn-success">Enregistrer
+                </button>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="modalClient" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form [formGroup]="formClient" (ngSubmit)="onSubmitClient()" autocomplete="off" novalidate>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-success"></div>
+                <div class="modal-header">Nouveau Client</div>
+                <div class="modal-body">
+                    <div class="mb-3 mt-2">
+                        <label for="basic-url" style="font-weight: 600;" class="form-label">Nom Client</label>
+                        <input placeholder="nom du client" type="text" class="form-control border border-info border-5 "
+                            formControlName="name" id="name">
+                        <div *ngIf="fClient['name'].touched && fClient['name'].invalid" class="alert alert-danger">
+                            <div *ngIf="fClient['name'].errors && fClient['name'].errors['required']">Ce champs est
+                                requis !</div>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center ">
+                        <div class="col-auto">
+                            <button [disabled]="!formClient.valid" type="submit" class="btn btn-success w-100"
+                                data-bs-dismiss="modal">Ajouter</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="modalDossier" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form [formGroup]="formDossier" (ngSubmit)="onSubmitDossier()" autocomplete="off" novalidate>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-status bg-success"></div>
+                <div class="modal-header">Nouveau Dossier</div>
+                <div class="modal-body">
+                    <div class="mb-3 mt-2">
+                        <label for="basic-url" style="font-weight: 600;" class="form-label">Nom Dossier</label>
+                        <input type="text" class="form-control bg-light" formControlName="nom" id="nom">
+                        <div *ngIf="fDossier['nom'].touched && fDossier['nom'].invalid" class="alert alert-danger">
+                            <div *ngIf="fDossier['nom'].errors && fDossier['nom'].errors['required']">Ce champs est
+                                requis !</div>
+                        </div>
+                    </div>
+                    <div class="row d-flex justify-content-center ">
+                        <div class="col-auto">
+                            <button [disabled]="!formDossier.valid" type="submit" class="btn btn-success w-100"
+                                data-bs-dismiss="modal">Ajouter</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

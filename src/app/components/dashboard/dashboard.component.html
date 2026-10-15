@@ -1,0 +1,255 @@
+<div class="container-fluid">
+  <div class="row row-deck row-cards" id="dashboard-print">
+    <button class="btn btn-light no-print" (click)="printDashboard()">
+      <i class="fa fa-print mx-2"></i>
+      {{ hasActiveFilter ? 'Imprimer les résultats filtrés' : 'Imprimer le tableau de bord' }}
+    </button>
+    <app-menu-dashboard></app-menu-dashboard>
+
+
+    <!--  Les produits les plus vendus aujourd'hui -->
+    <div class="col-md-6" style="max-height: 400px;" data-print-section="today">
+      <div class="card">
+        <div class="row card-header text-center h2">
+          <div class="col">Les produits les plus vendus aujourd'hui
+            <div class="small text-muted fw-normal">{{ todayLabel }}</div>
+          </div>
+          <div class="col">
+            <input type="text" class="form-control float-right" placeholder="Recherche..." [(ngModel)]="searchSelect" />
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead class="text-dark">
+              <tr>
+                <th>Produit</th>
+                <th>Qty Initial</th>
+                <th>Qty Vendu(s)</th>
+                <th>Qty Rest</th>
+                <th>Pourcentrage de vente</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="this.nbrPdt == 0">
+                <td class="font-italic text-center" colspan="5">
+                  <marquee behavior="alternate" direction="" class="h3 text-warning">
+                    Aucune vente éffectuée pour le moment...
+                  </marquee>
+                </td>
+              </tr>
+              <tr *ngFor="let produit of filteredToDay">
+                <td>{{produit.produit}}</td>
+                <td>{{ produit.qty_init }}</td> <!-- Quantité initiale -->
+                <td>{{ produit.sum_qty }}</td> <!-- Quantité vendue -->
+                <td>{{ produit.qty_rest}}</td> <!-- Quantité restante -->
+                <td>
+                  <div class="d-flex">
+                    <div class="ms-auto">
+                      <span *ngIf="produit.perCent < 100" class="text-green d-inline-flex align-items-center lh-1">
+                        {{produit.perCent}}% <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24"
+                          height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 17l6 -6l4 4l8 -8" />
+                          <path d="M14 7l7 0l0 7" />
+                        </svg>
+                      </span>
+                      <span *ngIf="produit.perCent >= 100" class="text-green d-inline-flex align-items-center lh-1">
+                        100% <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24"
+                          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 17l6 -6l4 4l8 -8" />
+                          <path d="M14 7l7 0l0 7" />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="progress progress-xs">
+                    <div class="progress-bar bg-primary" [style]="{'width': produit.perCent + '%'}"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Les Produits les plus vendus le -->
+    <div class="col-md-6" style="max-height: 400px;" data-print-section="byDate">
+      <div class="card">
+        <div class="row card-header text-center h2">
+          <div class="col">Les Produits les plus vendus le
+            <div class="small text-muted fw-normal" *ngIf="selectedDateLabel">{{ selectedDateLabel }}</div>
+          </div>
+          <div class="col">
+            <input onfocus="(this.type='date')" (change)="onChangeDate($event.target)" name="date" type="text"
+              class="form-control float-right" placeholder="Par Date" />
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table card-table table-vcenter">
+            <thead>
+              <tr>
+                <th class="w-25">
+                  <input type="text" class="form-control" placeholder="Recherche..." [(ngModel)]="searchSelectDate" />
+                </th>
+                <th>Quantité</th>
+                <th>Qty Vendu(s)</th>
+                <th>Qty Restante</th>
+                <th>Pourcentrage de vente</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="this.nbrPdtByDate == 0">
+                <td class="font-italic text-center" colspan="8">
+                  <marquee behavior="alternate" direction="" class="h3 text-warning">
+                    Aucune vente éffectuée ce jour la...
+                  </marquee>
+                </td>
+              </tr>
+              <tr *ngFor="let produit of filteredDate">
+                <td>{{produit.produit}}</td>
+                <td>{{ produit.qty_init }}</td> <!-- Quantité initiale -->
+                <td>{{ produit.sum_qty }}</td> <!-- Quantité vendue -->
+                <td>{{ produit.qty_rest }}</td> <!-- Quantité restante -->
+
+                <td class="w-25">
+                  <div class="d-flex">
+                    <div class="ms-auto">
+                      <span *ngIf="produit.perCent < 100" class="text-green d-inline-flex align-items-center lh-1">
+                        {{produit.perCent}}% <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24"
+                          height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 17l6 -6l4 4l8 -8" />
+                          <path d="M14 7l7 0l0 7" />
+                        </svg>
+                      </span>
+                      <span *ngIf="produit.perCent > 100" class="text-green d-inline-flex align-items-center lh-1">
+                        100% <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24"
+                          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 17l6 -6l4 4l8 -8" />
+                          <path d="M14 7l7 0l0 7" />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="progress progress-xs">
+                    <div class="progress-bar bg-primary" [style]="{'width': produit.perCent + '%'}"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Les produits les plus vendus entre le -->
+    <div class="col-md-6" style="max-height: 400px;" data-print-section="by2Date">
+      <div class="card">
+        <div class="row card-header text-center h2">
+          <div class="col-6">Les produits les plus vendus entre le
+            <div class="small text-muted fw-normal" *ngIf="selectedRangeLabel">{{ selectedRangeLabel }}</div>
+          </div>
+          <div class="col">
+            <input onfocus="(this.type='date')" (change)="onChange2DatesFirst($event.target)" name="date" type="text"
+              class="form-control" placeholder="Date debut" />
+          </div>
+          <div class="col">
+            <input onfocus="(this.type='date')" (change)="onChange2DatesSecond($event.target)" name="date" type="text"
+              class="form-control mx-1" placeholder="Date fin" [disabled]="!date" />
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table card-table table-vcenter">
+            <thead>
+              <tr>
+                <th class="w-25">
+                  <input type="text" class="form-control" placeholder="Recherche..." [(ngModel)]="searchSelect2Dates" />
+                </th>
+                <th>Quantité</th>
+                <th>Qty Vendu(s)</th>
+                <th>Qty Restante</th>
+                <th>Pourcentrage de vente</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="this.nbrPdtBy2Date == 0">
+                <td class="font-italic text-center" colspan="8">
+                  <marquee behavior="alternate" direction="" class="h3 text-warning">
+                    Aucune vente éffectuée durant cette période...
+                  </marquee>
+                </td>
+              </tr>
+              <tr *ngFor="let produit of filtered2Date">
+                <td>{{produit.produit}}</td>
+                <td>{{ produit.qty_init }}</td> <!-- Quantité initiale -->
+                <td>{{ produit.sum_qty }}</td> <!-- Quantité vendue -->
+                <td>{{ produit.qty_rest }}</td> <!-- Quantité restante -->
+                <td class="w-25">
+                  <div class="d-flex">
+                    <div class="ms-auto">
+                      <span *ngIf="produit.perCent < 100" class="text-green d-inline-flex align-items-center lh-1">
+                        {{produit.perCent}}% <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24"
+                          height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                          stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 17l6 -6l4 4l8 -8" />
+                          <path d="M14 7l7 0l0 7" />
+                        </svg>
+                      </span>
+                      <span *ngIf="produit.perCent > 100" class="text-green d-inline-flex align-items-center lh-1">
+                        100% <svg xmlns="http://www.w3.org/2000/svg" class="icon ms-1" width="24" height="24"
+                          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                          <path d="M3 17l6 -6l4 4l8 -8" />
+                          <path d="M14 7l7 0l0 7" />
+                        </svg>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="progress progress-xs">
+                    <div class="progress-bar bg-primary" [style]="{'width': produit.perCent + '%'}"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagramme des ventes -->
+    <div class="col-md-6" style="max-height: 400px;" data-print-section="chart">
+      <div class="card">
+        <div class="card-body">
+          <div class="row card-header text-center h2 mb-2">
+            <div class="col">Diagramme des ventes</div>
+            <div class="col">
+              <input onfocus="(this.type='date')" type="text" class="form-control" [(ngModel)]="startDate"
+                (ngModelChange)="onDateChange()" placeholder="Date debut">
+            </div>
+            <div class="col">
+              <input onfocus="(this.type='date')" type="text" class="form-control" [(ngModel)]="endDate"
+                (ngModelChange)="onDateChange()" placeholder="Date fin" [disabled]="!startDate">
+            </div>
+          </div>
+
+          <!-- 📊 Graphique -->
+          <div id="chart-mentions" class="chart-lg" style="width: 100%; overflow: hidden;">
+            <canvas #chart baseChart [data]="chartData" [options]="chartOptions" [type]="'line'">
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

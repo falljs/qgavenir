@@ -1,0 +1,42 @@
+.page{
+    width: 80mm;
+    height: auto;
+    //border: 2px solid black;
+}
+.body{display: none;}
+.iconeStock{display: none;}
+@media print
+{
+.page{
+        margin:1 px;
+        margin-top: 1%;
+        margin-left: 2%;
+        font-size: medium;
+        width: 107mm;
+        height: auto;
+        //border: 2px solid black;
+    }
+    .body{
+        display: contents;
+        font-family: Comic Sans MS;
+    }
+    .iconeStock{display: none;}   
+                
+}
+table{
+    td,tr,th{
+        border: 0.1px solid black;
+    } 
+}
+
+/* thead{
+    td,tr{
+        border: 0.1px solid black;
+    } 
+}
+tbody{
+    td,tr{
+        border: 0.1px solid black;
+    }
+    
+} */

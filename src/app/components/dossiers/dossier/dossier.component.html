@@ -1,0 +1,114 @@
+<div class="row">
+
+  <div class="page-header d-print-none">
+    <div class="container-xl">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-2">
+          <h2 class="page-title">
+            Dossiers
+          </h2>
+        </div>
+        <!-- Page title actions -->
+        <div class="col-auto ms-auto d-print-none">
+          <div class="d-flex mb-2">
+            <input *ngIf="!isPane" type="search" (keyup)="searchClient()" id="inputSearchClt"
+              class="form-control d-inline-block w-100 me-3" placeholder="Rechercher un dossier client">
+            <input *ngIf="isPane" type="search" (keyup)="searchFournisseur()" id="inputSearchFn"
+              class="form-control d-inline-block w-100 me-3" placeholder="Rechercher un dossier founisseur">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a href="#tabs-clients" (click)="changePaneClt()" class="nav-link active" data-bs-toggle="tab"
+            aria-selected="true" role="tab">Dossier
+            clients</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a href="#tabs-fournisseurs" (click)="changePaneFn()" class="nav-link" data-bs-toggle="tab"
+            aria-selected="false" tabindex="-1" role="tab">Dossier fournisseurs</a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <div class="tab-content">
+        <div class="tab-pane active show" id="tabs-clients" role="tabpanel">
+          <div class="row">
+            <div class="col-md-2 mb-3" *ngFor="let dossier of listDossierClient 
+            | paginate: { itemsPerPage: defaultItemClt, currentPage: pageClt, totalItems: nbrDossierClt }">
+              <ng-container>
+                <div class="border text-center p-2">
+                  <a href="javascript:void(0)" (click)="getDossier(dossier)" style="text-decoration: none;">
+                    <img *ngIf="dossier.etat == true" width="75%" src="assets/img/folder_open.png" alt="">
+                    <img *ngIf="dossier.etat == false" width="75%" src="assets/img/folder_close.png" alt="">
+                    <div class="h3">{{ dossier.nom }}</div>
+                    <div style="font-size: smaller;">crée le : {{ dossier.created_at | date:"d-M-y à H:mm" }}</div>
+                    <div>crée par : {{ dossier.auteur }}</div>
+                  </a>
+                </div>
+              </ng-container>
+            </div>
+            <div class="card-footer d-flex align-items-center" style="height: 40px;">
+              <p class="m-0 text-muted">Affichage
+                <span *ngIf="pageClt == 1">{{defaultItemClt}}</span>
+                <span *ngIf="pageClt != 1 && pageClt != nbrPageClt">{{defaultItemClt * pageClt}}</span>
+                <span *ngIf="pageClt != 1 && pageClt == nbrPageClt">{{nbrDossierClt}}</span>
+                sur <span>{{nbrDossierClt}}</span> Dossiers
+              </p>
+              <ul class="pagination m-0 ms-auto mt-3">
+                <pagination-controls (pageChange)="pageClt = $event" previousLabel="Précédent" nextLabel="Suivant">
+                </pagination-controls>
+              </ul>
+            </div>
+          </div>
+          <div class="row bg-secondary p-2">
+            <div class="col-md-4 h4 text-white">Total : {{totalNetClt | number: '1.0-0'}} F CFA</div>
+            <div class="col-md-4 h4 text-white">Total Verser : {{totalVerserClt | number: '1.0-0'}} F CFA</div>
+            <div class="col-md-4 h4 text-white">Total Restant : {{totalRestantClt | number: '1.0-0'}} F CFA</div>
+          </div>
+        </div>
+        <div class="tab-pane" id="tabs-fournisseurs" role="tabpanel">
+          <div class="row">
+            <div class="col-md-2 mb-3" *ngFor="let dossier of listDossierFournisseur 
+            | paginate: { itemsPerPage: defaultItemFn, currentPage: pageFn, totalItems: nbrDossierFn }">
+              <ng-container>
+                <div class="border text-center p-2">
+                  <a href="javascript:void(0)" (click)="getDossier(dossier)" style="text-decoration: none;">
+                    <img *ngIf="dossier.etat == true" width="75%" src="assets/img/folder_fournisseur.png" alt="">
+                    <img *ngIf="dossier.etat == false" width="75%" src="assets/img/folder_close.png" alt="">
+                    <div class="h3">{{ dossier.nom }}</div>
+                    <div style="font-size: smaller;">crée le : {{ dossier.created_at | date:"d-M-y à H:mm" }}</div>
+                    <div>crée par : {{ dossier.auteur }}</div>
+                  </a>
+                </div>
+              </ng-container>
+            </div>
+            <div class="card-footer d-flex align-items-center" style="height: 40px;">
+              <p class="m-0 text-muted">Affichage
+                <span *ngIf="pageFn == 1">{{defaultItemFn}}</span>
+                <span *ngIf="pageFn != 1 && pageFn != nbrPageFn">{{defaultItemFn * pageFn}}</span>
+                <span *ngIf="pageFn != 1 && pageFn == nbrPageFn">{{nbrDossierFn}}</span>
+                sur <span>{{nbrDossierFn}}</span> Dossiers
+              </p>
+              <ul class="pagination m-0 ms-auto mt-3">
+                <pagination-controls (pageChange)="pageFn = $event" previousLabel="Précédent" nextLabel="Suivant">
+                </pagination-controls>
+              </ul>
+            </div>
+          </div>
+          <div class="row bg-secondary p-2">
+            <div class="col-md-4 h4 text-white">Total : {{totalNetFn | number: '1.0-0'}} F CFA</div>
+            <div class="col-md-4 h4 text-white">Total Verser : {{totalVerserFn | number: '1.0-0'}} F CFA</div>
+            <div class="col-md-4 h4 text-white">Total Restant : {{totalRestantFn | number: '1.0-0'}} F CFA</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,152 @@
+<div class="container-fluid vh-100">
+  <div class="row h-100">
+
+    <!-- Colonne image gauche FULL COVER -->
+    <div class="col-md-6 d-none d-md-block p-0">
+      <div class="h-100 w-100 image-cover">
+        <img src="{{settingIconeStock.img_login}}" alt="Illustration Iconestock"
+          class="img-fluid w-100 h-100 object-fit-cover" />
+      </div>
+    </div>
+
+
+    <!-- Colonne formulaire droite -->
+    <div class="col-md-6 col-12 d-flex align-items-center justify-content-center bg-light p-4">
+      <div class="w-100" style="max-width: 500px;">
+        <!-- Logo + titres -->
+        <div class="text-center mb-4">
+          <img src="/assets/img/Icone_Stock_logo.png" alt="Logo Iconestock" width="150">
+          <h2 class="mt-3">Bienvenue sur Iconestock</h2>
+          <p class="text-muted">Connectez-vous pour continuer à gérer votre commerce.</p>
+        </div>
+
+        <!-- Alerte jours restants -->
+        <div *ngIf="this.paymentService.reste_jour" class="alert alert-warning text-center mb-4">
+          <strong>⏳ Attention :</strong> Il vous reste <strong>{{ this.paymentService.difference }}</strong> jour(s)
+          avant l’expiration de votre abonnement (Paiement du <strong>{{ this.paymentService.date_paiement
+            }}</strong>).<br>
+          <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modalPaiement">Renouveler maintenant</a>
+        </div>
+
+        <!-- Formulaire de connexion -->
+        <form #loginForm="ngForm" (ngSubmit)="login(loginForm)" autocomplete="off" novalidate>
+          <div class="mb-3">
+            <label class="form-label">Nom d'utilisateur</label>
+            <input type="text" name="username" ngModel class="form-control" placeholder="Nom d'utilisateur"
+              autocomplete="off">
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Mot de passe</label>
+            <div class="input-group input-group-flat">
+              <input [type]="showPassword ? 'text' : 'password'" class="form-control" name="password" ngModel
+                placeholder="Mot de passe" autocomplete="off">
+
+              <span class="input-group-text" (click)="showHidePwd()" [hidden]="showPassword">
+                <a href="javascript:void(0)" class="link-secondary" title="Afficher le mot de passe"
+                  data-bs-toggle="tooltip">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                    <path d="M22 12c-2.667 4.667 -6 7 -10 7s-7.333 -2.333 -10 -7
+                  c2.667 -4.667 6 -7 10 -7s7.333 2.333 10 7" />
+                  </svg>
+                </a>
+              </span>
+
+              <span class="input-group-text" (click)="showHidePwd()" [hidden]="!showPassword">
+                <a href="javascript:void(0)" class="link-secondary" title="Masquer le mot de passe"
+                  data-bs-toggle="tooltip">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye-off" width="24"
+                    height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M3 3l18 18"></path>
+                    <path d="M10.584 10.587a2 2 0 0 0 2.828 2.83"></path>
+                    <path d="M9.363 5.365a9.466 9.466 0 0 1 2.637 -.365
+                  c4 0 7.333 2.333 10 7c-.778 1.361 -1.612 2.524 -2.503 3.488
+                  m-2.14 1.861c-1.631 1.1 -3.415 1.651 -5.357 1.651
+                  c-4 0 -7.333 -2.333 -10 -7c1.369 -2.395 2.913 -4.175
+                  4.632 -5.341">
+                    </path>
+                  </svg>
+                </a>
+              </span>
+            </div>
+          </div>
+
+          <div class="mb-4 d-flex justify-content-between">
+            <label class="form-check">
+              <input type="checkbox" class="form-check-input" />
+              <span class="form-check-label">Se souvenir de moi</span>
+            </label>
+            <a class="text-dark text-decoration-none" href="#">Mot de passe oublié ?</a>
+          </div>
+
+          <!-- Erreurs -->
+          <div class="mb-2 d-flex justify-content-center">
+            <span *ngIf="errorMessage" class="h4 text-danger text-center">Nom d'utilisateur ou mot de passe incorrect
+              !</span>
+            <span *ngIf="errorAccess" class="h4 text-danger text-center">Vous n'avez pas l'autorisation d'accès !</span>
+          </div>
+
+          <!-- Chargement -->
+          <div *ngIf="!isClick" class="d-flex justify-content-center mb-2">
+            <img width="50" src="assets/img/load-loading.gif" alt="Chargement...">
+          </div>
+
+          <!-- Bouton -->
+          <div class="form-footer">
+            <button [disabled]="!isClick" type="submit" class="btn w-100"
+              style="background-color: #690202; color: #fff;">
+              <span>Se connecter</span>
+            </button>
+          </div>
+        </form>
+
+
+        <!-- Liens utiles -->
+        <div class="text-center mt-4">
+          <a href="https://iconestock.com/condition-generale-utilisation" target="_blank"
+            class="d-block text-decoration-underline text-dark mb-2">
+            Termes et Conditions d'utilisation
+          </a>
+          <a href="https://www.qg-avenir.iconestock.com/server/public/clear-cache"
+            class="text-decoration-underline text-warning">
+            Optimiser l'application
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ MODAL DE PAIEMENT -->
+<div class="modal fade" id="modalPaiement" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <button type="button" class="btn-close m-2" data-bs-dismiss="modal"></button>
+      <div class="modal-body text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="text-danger mb-3" width="40" height="40" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+          <path d="M12 9v2m0 4v.01" />
+          <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25A2 2 0 0 0 5 19z" />
+        </svg>
+        <h4>Renouvellement de l’abonnement</h4>
+        <p class="text-muted">Choisissez une durée pour continuer à profiter de toutes les fonctionnalités.</p>
+        <div class="d-grid gap-2 mt-3">
+          <a href="https://www.qg-avenir.iconestock.com/server/public/wave" class="btn btn-success">Payer avec Wave (1
+            mois)</a>
+          <a href="https://www.qg-avenir.iconestock.com/server/public/wave3" class="btn btn-success">Payer avec Wave (3
+            mois)</a>
+          <a href="https://www.qg-avenir.iconestock.com/server/public/wave6" class="btn btn-success">Payer avec Wave (6
+            mois)</a>
+          <a href="https://www.qg-avenir.iconestock.com/server/public/wave12" class="btn btn-success">Payer avec Wave
+            (12
+            mois)</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

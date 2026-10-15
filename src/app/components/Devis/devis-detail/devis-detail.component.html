@@ -1,0 +1,376 @@
+<div class="card bg-transparent border-none mb-2 container-fluid">
+    <div class="btn-group mb-2 mt-2 table-responsive" role="group">
+        <button type="button" (click)="printDevis(devis)"
+            class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-print fa-1x mx-3"></i> Imprimer</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier facture et devis Vente')"
+            type="button" (click)="editDevis(devis)" class="btn btn-outline-info alert alert-info btn-sm mx-3">
+            <span class="h4">Modifier</span>
+        </button>
+        <button type="button" (click)="sendFactureWhatsApp(devis)"
+            [hidden]="!devis.numero_client || devis.code_client == 'C_1'"
+            [title]="!devis.numero_client ? 'Veuillez saisir le numéro client' : ''"
+            class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-whatsapp fa-1x"></i> Envoyer WhatsApp </span>
+        </button>
+        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modalNumero"
+            [hidden]="devis.numero_client || devis.code_client == 'C_1'"
+            [title]="!devis.numero_client ? 'Veuillez saisir le numéro client' : ''"
+            class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-whatsapp fa-1x"></i> Envoyer WhatsApp </span>
+        </a>
+
+        <div class="modal modal-blur" id="modalNumero" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-status bg-success"></div>
+                    <div class="modal-header">Mettre à jour son numéro</div>
+                    <div class="modal-body">
+                        <div class="mb-3 mt-2">
+                            <div class="md-2">
+                                <label for="phone" style="font-weight: 600;" class="form-label mt-1">
+                                    Numéro de Téléphone
+                                </label>
+                                <input placeholder="Exemple : +221771234567" type="text"
+                                    class="form-control border border-info border-5" [(ngModel)]="updateInfo.phone"
+                                    id="phone" name="phone">
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-center ">
+                            <div class="col-auto">
+                                <button [disabled]="!updateInfo.phone" (click)="onSubmitUpdatePhone()" type="button"
+                                    class="btn btn-success w-100" data-bs-dismiss="modal">Envoyer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' convertir devis Vente')"
+            (click)="openModalConvert(devis.id)" type="button" data-bs-toggle="modal"
+            data-bs-target="#modal-success-commande" class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4">Convertir en facture</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' convertir devis bon Vente')"
+            (click)="openModalConvert(devis.id)" type="button" data-bs-toggle="modal"
+            data-bs-target="#modal-success-bon" class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4">Convertir en bon</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer facture et devis Vente')"
+            type="button" data-bs-toggle="modal" data-bs-target="#modalDeleteDvs"
+            class="btn btn-outline-danger alert alert-danger btn-sm mx-3"><span class="h4">Supprimer</span>
+        </button>
+    </div>
+</div>
+<div class="card-header bg-white py-1 h3 mb-1 justify-content-center text-muted">Détails - <span
+        class="text-secondary">{{devis.numero}}</span></div>
+<div class="card">
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">N° Devis</label>
+                <span class="form-control bg-light">{{devis.numero}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Date Devis</label>
+                <span class="form-control bg-light">{{devis.created_at | date:"d-MM-y à H:mm"}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Client</label>
+                <span class="form-control bg-light">{{devis.nom_client}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Auteur</label>
+                <span class="form-control bg-light">{{devis.auteur}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Type</label>
+                <span class="form-control bg-light">{{devis.type ?? 'pas de type'}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card h3 text-center">Liste Produits</div>
+                    <div class="table-responsive border mb-3">
+                        <div style="overflow-y:scroll;max-height:250px;" id="pdfTable" #pdftable="">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Produit</th>
+                                        <th scope="col">Prix</th>
+                                        <th scope="col">Qty</th>
+                                        <th scope="col">Sous Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let ligne of this.ligneDevisService.listLigneDevis; let i = index;"
+                                        [ngClass]="{'alert alert-danger': ligne.qty > ligne.qtyReste}">
+                                        <td>{{ligne.produit}}</td>
+                                        <td>{{ligne.prix | number: '1.0-0'}}</td>
+                                        <td>{{ligne.qty}}</td>
+                                        <td>{{ligne.totht | number: '1.0-0'}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Total HT</label>
+                <span class="form-control bg-light">{{devis.totht | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-1">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Tva %</label>
+                <span class="form-control bg-light">{{devis.tottva}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Total TTC</label>
+                <span class="form-control bg-light">{{devis.totttc | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Net à payer</label>
+                <span class="form-control bg-light">{{devis.net | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Delete Devis -->
+<div class="modal modal-blur" id="modalDeleteDvs" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer le devis ? Ce que vous faites ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteDevis()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Ligne Devis -->
+<div class="modal modal-blur" id="modalDeleteLdvs" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer cette ligne ? Ce que vous faites ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteLigneDevis()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alert Convert Devis To Cammande -->
+<div class="modal modal-blur" id="modalConvert" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Attention !</h3>
+                <div class="text-muted">
+                    Certains produits utilisés sur ce devis sont en rupture de stock,
+                    Veuillez corriger cela avant de convertir le devis en facture.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirm Convert Devis To Cammande -->
+<div class="modal modal-blur" id="modal-success-commande" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-success"></div>
+            <div class="modal-body text-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-green icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                    <path d="M9 12l2 2l4 -4" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir convertir ce devis en facture ? Ce que vous faites ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="setDevisToCommande()" class="btn btn-success w-100"
+                                data-bs-dismiss="modal">OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirm Convert Devis To Bon -->
+<div class="modal modal-blur" id="modal-success-bon" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-success"></div>
+            <div class="modal-body text-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-green icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+                    <path d="M9 12l2 2l4 -4" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir convertir ce devis en bon ? Ce que vous faites ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="setDevisToBon()" class="btn btn-success w-100"
+                                data-bs-dismiss="modal">OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alert Delete Last Ligne Devis -->
+<div class="modal modal-blur" id="modalAlertLine" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Attention !</h3>
+                <div class="text-muted">
+                    Ajoutez un produit avant de supprimer la dernière ligne ou bien supprimer le devis !
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

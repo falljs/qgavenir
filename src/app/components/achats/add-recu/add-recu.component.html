@@ -1,0 +1,267 @@
+<div class="card">
+  <div class="row p-3">
+    <!-- Liste  -->
+    <div class="col-md">
+      <div class="mb-3">
+        <label for="basic-url" style="font-weight: 600;" class="form-label">N° Achat</label>
+        <span class="form-control bg-light">{{achat.id}}</span>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="mb-3">
+        <label for="basic-url" style="font-weight: 600;" class="form-label">Date Achat</label>
+        <span class="form-control bg-light">{{achat.date_achat}}</span>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="mb-3">
+        <label for="basic-url" style="font-weight: 600;" class="form-label">Fournisseur</label>
+        <span class="form-control bg-light">{{fournisseur.name}}</span>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="mb-3">
+        <label for="basic-url" style="font-weight: 600;" class="form-label">Dossier</label>
+        <span class="form-control bg-light">{{dossier.nom}}</span>
+      </div>
+    </div>
+
+    <div class="col-md" [hidden]="achat.net < totalReg">
+      <a href="javascript:void(0)" class="btn btn-success mt-3" (click)="addRecu()" data-bs-toggle="modal"
+        data-bs-target="#modalNewRecu">Nouveau reçu
+      </a>
+    </div>
+
+    <div class="col-md-12">
+      <div class="card h3 text-center">Liste Reçus</div>
+      <div class="table-responsive border mb-3">
+        <div style="overflow-y:scroll;max-height:250px;" id="pdfTable" #pdftable="">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">N° Reçu</th>
+                <th scope="col">Date Reçu</th>
+                <th scope="col">Réglement</th>
+                <th scope="col">Date de Création</th>
+                <th scope="col">
+                  Option <a href="javascript:void(0)" class="btn btn-sm btn-warning mx-2"
+                    (click)="downloadFactRecu(achat)"><i class="fa fa-print"></i>
+                  </a>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let recu of this.achatService.listRecu ;let i = index;">
+                <td>{{recu.num_recu}}</td>
+                <td>{{recu.date_recu+' à '+recu.heure_recu}}</td>
+                <td>{{recu.avance | number: '1.0-0'}} F CFA</td>
+                <td>{{recu.created_at | date:"d-M-y à H:mm"}}</td>
+                <td>
+                  <i class="text-warning btn fa fa-print mx-1" (click)="downloadFactRecuOne(recu)">
+                  </i>
+                  <i class="text-primary btn fa fa-edit mx-1" (click)="updateRecu(recu)" data-bs-toggle="modal"
+                    data-bs-target="#modalUpdateRecu">
+                  </i>
+                  <i class="text-danger btn fa fa-trash mx-1" (click)="modalDeleteRecu(recu.id)" data-bs-toggle="modal"
+                    data-bs-target="#modalDeleteRecu">
+                  </i>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row p-3">
+    <!-- Liste  -->
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label for="basic-url" style="font-weight: 600;" class="form-label">Net à Payer</label>
+        <span class="form-control bg-light">{{achat.net | number: '1.0-0'}} F CFA</span>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="mb-3">
+        <label for="basic-url" style="font-weight: 600;" class="form-label">Total Réglement</label>
+        <span class="form-control bg-light">{{totalReg | number: '1.0-0'}} F CFA</span>
+      </div>
+    </div>
+
+    <div class="col-md">
+      <div class="mb-3"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal New Recu -->
+<div class="modal modal-blur" id="modalNewRecu" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nouveau Reçu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form [formGroup]="formRecu" (ngSubmit)="onSubmitRecu()">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label class="form-label">N° Reçu</label>
+                <input type="text" class="form-control" formControlName="num_recu" id="num_recu" placeholder="N° Reçu">
+                <div *ngIf="fRecu['num_recu'].touched && fRecu['num_recu'].invalid" class="alert alert-danger">
+                  <div *ngIf="fRecu['num_recu'].errors && fRecu['num_recu'].errors['required']">Ce champs est requis !
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Date Reçu</label>
+                <input type="text" class="form-control" formControlName="date_recu" id="date_recu"
+                  onfocus="(this.type='date')" (change)="onChangeDate($event.target)" placeholder="Date Reçu">
+                <div *ngIf="fRecu['date_recu'].touched && fRecu['date_recu'].invalid" class="alert alert-danger">
+                  <div *ngIf="fRecu['date_recu'].errors && fRecu['date_recu'].errors['required']">Ce champs est requis !
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Heure Reçu</label>
+                <input type="text" class="form-control" formControlName="heure_recu" id="heure_recu"
+                  onfocus="(this.type='time')" placeholder="Heure Reçu">
+                <div *ngIf="fRecu['heure_recu'].touched && fRecu['heure_recu'].invalid" class="alert alert-danger">
+                  <div *ngIf="fRecu['heure_recu'].errors && fRecu['heure_recu'].errors['required']">Ce champs est requis
+                    !</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label class="form-label">Réglement</label>
+                <input type="number" class="form-control" formControlName="avance" id="avance">
+                <div *ngIf="fRecu['avance'].touched && fRecu['avance'].invalid" class="alert alert-danger">
+                  <div *ngIf="fRecu['avance'].errors && fRecu['avance'].errors['required']">Ce champs est requis !</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" [disabled]="!formRecu.valid" class="btn btn-primary ms-auto">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update Recu -->
+<div class="modal modal-blur" id="modalUpdateRecu" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modifier le Reçu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form [formGroup]="formUpRecu" (ngSubmit)="onUpdateRecu()">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label class="form-label">N° Reçu</label>
+                <input type="text" class="form-control" formControlName="num_recu" id="num_recu" placeholder="N° Reçu">
+                <div *ngIf="fUpRecu['num_recu'].touched && fUpRecu['num_recu'].invalid" class="alert alert-danger">
+                  <div *ngIf="fUpRecu['num_recu'].errors && fUpRecu['num_recu'].errors['required']">Ce champs est requis
+                    !</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Date Reçu</label>
+                <input type="text" class="form-control" formControlName="date_recu" id="date_recu"
+                  onfocus="(this.type='date')" (change)="onChangeDate($event.target)">
+                <div *ngIf="fUpRecu['date_recu'].touched && fUpRecu['date_recu'].invalid" class="alert alert-danger">
+                  <div *ngIf="fUpRecu['date_recu'].errors && fUpRecu['date_recu'].errors['required']">Ce champs est
+                    requis !</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Heure Reçu</label>
+                <input type="time" class="form-control" formControlName="heure_recu" id="heure_recu">
+                <div *ngIf="fUpRecu['heure_recu'].touched && fUpRecu['heure_recu'].invalid" class="alert alert-danger">
+                  <div *ngIf="fUpRecu['heure_recu'].errors && fUpRecu['heure_recu'].errors['required']">Ce champs est
+                    requis !</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label class="form-label">Réglement</label>
+                <input type="number" class="form-control" formControlName="avance" id="avance">
+                <div *ngIf="fUpRecu['avance'].touched && fUpRecu['avance'].invalid" class="alert alert-danger">
+                  <div *ngIf="fUpRecu['avance'].errors && fUpRecu['avance'].errors['required']">Ce champs est requis !
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" [disabled]="!formUpRecu.valid" class="btn btn-primary ms-auto"
+            data-bs-dismiss="modal">Mettre à jour
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Delete Ligne Recu -->
+<div class="modal modal-blur" id="modalDeleteRecu" tabindex="-1" aria-hidden="true" role="dialog">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-status bg-danger"></div>
+      <div class="modal-body text-center py-4">
+        <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 9v2m0 4v.01" />
+          <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+        </svg>
+        <h3>Êtes-vous sûr ?</h3>
+        <div class="text-muted">
+          de vraiment vouloir supprimer ce reçu ? Ce que vous avez fait ne peut être annulé !
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col">
+              <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+            </div>
+            <div class="col">
+              <a href="javascript:void(0)" (click)="deleteRecu()" class="btn btn-danger w-100" data-bs-dismiss="modal">
+                OUI
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

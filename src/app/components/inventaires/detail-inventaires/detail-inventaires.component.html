@@ -1,0 +1,280 @@
+<div class="cards">
+    <app-menu-stock></app-menu-stock>
+
+    <div class="card mb-2">
+        <div class="card-header">
+            <h5 class="card-title">Détails de l'inventaire</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md border-3">
+                    <p class="fw-bold"> <span class="text-muted">Nom de l'inventaire <br> </span> {{inventaire.name}}
+                    </p>
+                    <p class="fw-bold"> <span class="text-muted">Stock à inventer <br> </span> {{inventaire.site}}</p>
+                    <p class="fw-bold"> <span class="text-muted">Auteur <br> </span> {{inventaire.auteur }}</p>
+                </div>
+                <div class="col-md border-start border-3 ">
+                    <p class="fw-bold"> <span class="text-muted">Date de création <br> </span> {{inventaire.created_at |
+                        date: 'EEEE d MMMM y à HH:mm'}}</p>
+                    <p class="fw-bold"> <span class="text-muted">Dernière modification <br> </span>
+                        {{inventaire.updated_at
+                        | date: 'EEEE d MMMM y à HH:mm'}}</p>
+
+                    <p class="fw-bold"> <span class="text-muted">Status actual de l'inventaire : </span>
+                        <span [ngClass]="{
+                                    'text-secondary': inventaire.status === 'Brouillon',
+                                    'text-warning': inventaire.status === 'En cours',
+                                    'text-success': inventaire.status === 'Terminer'
+                                    }">
+                            {{ inventaire.status }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-8 border-start  border-3 ">
+                    <p class="fw-bold"> Finaliser l'inventaire</p>
+                    <div class="row">
+                        <div class="col-md mb-1">
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">Coût d'acquisition</span>
+                                <input type="text" [ngModel]="inventaire.acquisition"
+                                    (ngModelChange)="inventaire.acquisition = $event"
+                                    [value]="inventaire.acquisition | number:'1.0-0'" readonly class="form-control"
+                                    placeholder="Coût d'acquisition" aria-label="Username"
+                                    aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+                        <div class="col-md mb-1">
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">Crédit</span>
+                                <input type="number" [(ngModel)]="inventaire.credit"
+                                    [disabled]="inventaire.status == 'Terminer'" (ngModelChange)="calculeTotalReel()"
+                                    class="form-control" placeholder="les crédits" aria-label="Username"
+                                    aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+
+                        <div class="col-md mb-1">
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">Dette</span>
+                                <input type="number" [(ngModel)]="inventaire.dette"
+                                    [disabled]="inventaire.status == 'Terminer'" (ngModelChange)="calculeTotalReel()"
+                                    class="form-control" placeholder="les dette" aria-label="Username"
+                                    aria-describedby="basic-addon1">
+                            </div>
+                        </div>
+
+                        <div class="col-md mb-1">
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">Rapport</span>
+                                <input type="text" [ngModel]="inventaire.benefice"
+                                    (ngModelChange)="inventaire.benefice = $event"
+                                    [value]="inventaire.benefice | number: '1.0-0'" readonly class="form-control"
+                                    placeholder="bénéfice ou perte" aria-label="rapport"
+                                    aria-describedby="basic-addon1">
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 text-center" [hidden]="inventaire.status == 'Brouillon' ">
+                            <div class="text-warning mb-2">
+                                <small>
+                                    Une fois l'inventaire marqué comme terminé, les quantités seront ajustées et il ne
+                                    sera
+                                    plus
+                                    possible d'apporter de modifications. En d'autres termes, l'état final de
+                                    l'inventaire
+                                    sera
+                                    figé et les ajustements effectués seront considérés comme définitifs.
+                                </small>
+                            </div>
+
+                            <button
+                                *ngIf="userService.checkPermissionExistence(firstRoleName + ' status inventaire Stock')"
+                                [disabled]="isDisableTerminer" class="btn btn-success" (click)="onTerminer()"
+                                [hidden]="inventaire.status == 'Terminer'" type="button">
+                                <span *ngIf="!isDisableTerminer && !isClickTerminer">Terminer</span>
+                                <span *ngIf="isDisableTerminer && isClickTerminer"
+                                    class="spinner-border spinner-border-sm mx-1"></span>
+                                <span *ngIf="isDisableTerminer && isClickTerminer">Chargement...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header" [hidden]="inventaire.status == 'Terminer'">
+            <div class="mx-3 w-50">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Inventaire par produit
+                    ({{produitsInventaire.length}})</label>
+                <div class="input-group">
+                    <div class="seach-produits">
+                        <div class="form-select selected" (click)="showDropdown = !showDropdown">
+                            <ng-container *ngIf="selectedProduit; else placeholder">
+                                <span>{{ selectedProduit.designation }}</span>
+                            </ng-container>
+                            <ng-template #placeholder>
+                                <span>Sélectionner un produit...</span>
+                            </ng-template>
+                        </div>
+
+                        <div class="form-select showlists" *ngIf="showDropdown">
+                            <input type="text" [(ngModel)]="searchSelect" placeholder="Rechercher..." />
+
+                            <div class="showlists-item" *ngFor="let product of filtre"
+                                (click)="selectProduit(product); showDropdown = false">
+                                <span>{{ product.designation }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mx-3 w-25">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Inventaire par catégorie</label>
+                <select name="" id="" class="form-select" (change)="selectFamille($event)">
+                    <option value="">Sélectionner un catégorie...</option>
+                    <option *ngFor="let famille of listeFamilles" [value]="famille">{{famille}}</option>
+                </select>
+            </div>
+
+            <div class="mx-3 w-25">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Inventaire pour tous les
+                    produits</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="flexCheckDefault"
+                        (change)="selectAllProduit($event)" [checked]="isAllChecked">
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Tous les produits
+                    </label>
+                </div>
+            </div>
+
+            <div class="w-25">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Enregistrer l'inventaire</label>
+                <button [disabled]="isDisable || produitsInventaire.length === 0" class="btn btn-success form-control"
+                    (click)="onSubmit()" type="button">
+                    <span *ngIf="!isDisable && !isClick">Sauvegarder </span>
+                    <span *ngIf="isDisable && isClick" class="spinner-border spinner-border-sm mx-1"></span>
+                    <span *ngIf="isDisable && isClick">Chargement...</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-scroll-container table-responsive">
+                <table class="table table-vcenter card-table">
+                    <thead class="sticky-top">
+                        <tr>
+                            <th>Produit</th>
+                            <th>Quantité théorique</th>
+                            <th>Prix</th>
+                            <th>S.Total</th>
+                            <th>Quantité comptée</th>
+                            <th>Quantité différente</th>
+                            <th>S.Total(réel)</th>
+                            <th>Remarques</th>
+                            <th [hidden]="inventaire.status == 'Terminer' || inventaire.status == 'Terminer'">Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- commentaire si produitsInventaire est vide -->
+                        <tr *ngIf="produitsInventaire.length === 0">
+                            <td colspan="7" class="text-center">
+                                <marquee behavior="alternate" direction="">Aucun produit trouvé</marquee>
+                            </td>
+                        </tr>
+
+                        <tr *ngFor="let produit of produitsInventaire" [ngClass]="{
+      'table-success': produit.checked
+    }">
+                            <td>
+                                <a class="text-dark" (click)="detail(produit)" data-bs-toggle="offcanvas"
+                                    href="#detailOffcanvasStart" role="button" aria-controls="detailOffcanvasStart">
+                                    {{produit.designation || produit.produit}}
+                                </a>
+                            </td>
+
+                            <td>{{produit.qty}}</td>
+
+                            <td>{{produit.prix_achat ?? 0 | number: '1.0-0'}}</td>
+
+                            <td>
+                                <input style="border: none;" disabled [value]="produit.total | number: '1.0-0' ">
+                            </td>
+
+                            <td>
+                                <input [disabled]="inventaire.status == 'Terminer' || inventaire.status == 'Terminer'"
+                                    type="number" [(ngModel)]="produit.stock_physique"
+                                    (ngModelChange)="calculerQuantiteDifferent(produit)">
+                            </td>
+
+                            <td>
+                                <span class="text-danger">
+                                    <input style="border: none;font-weight: 600;font-size:larger;  " disabled
+                                        [value]="produit.ecart > 0 ? ' + ' + produit.ecart : produit.ecart" type="text"
+                                        name="" id="" [ngClass]="{
+                                        'text-danger': produit.ecart < 0, 
+                                        'text-success': produit.stock_physique === produit.qty,
+                                        'text-warning': produit.ecart > 0
+                                        }">
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <input style="border: none;" disabled [value]="produit.total_reel | number: '1.0-0'">
+                            </td>
+
+                            <td>
+                                <textarea
+                                    [disabled]="inventaire.status == 'Terminer' || inventaire.status == 'Terminer'"
+                                    (keyup)="keyRemarque()" name="" id="1" [(ngModel)]="produit.remarque"></textarea>
+                            </td>
+
+                            <td [hidden]="inventaire.status == 'Terminer' || inventaire.status == 'Terminer'">
+                                <div class="btn-list flex-nowrap">
+                                    <a class="btn btn-sm btn-danger" (click)="remove(produit)"
+                                        href="javascript:void(0)">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="row mt-3">
+
+                <div class="col-md-4 mb-2">
+                    <div class="alert alert-danger mb-0 d-flex justify-content-between align-items-center">
+                        <strong>Total des pertes</strong>
+                        <span>{{ montantPerte | number:'1.0-0' }} FCFA</span>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <div class="alert alert-success mb-0 d-flex justify-content-between align-items-center">
+                        <strong>Total des surplus</strong>
+                        <span>{{ montantSurplus | number:'1.0-0' }} FCFA</span>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-2">
+                    <div class="alert mb-0 d-flex justify-content-between align-items-center" [ngClass]="{
+                'alert-success': bilanInventaire > 0,
+                'alert-danger': bilanInventaire < 0,
+                'alert-secondary': bilanInventaire === 0
+            }">
+                        <strong>Bilan</strong>
+                        <span>{{ bilanInventaire | number:'1.0-0' }} FCFA</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>

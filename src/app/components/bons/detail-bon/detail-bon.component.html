@@ -1,0 +1,332 @@
+<div class="card bg-transparent border-none mb-2 container-fluid">
+    <div class="btn-group mb-2 mt-2 table-responsive" role="group">
+        <button type="button" (click)="printBon(bon)" class="btn btn-outline-warning alert alert-warning btn-sm mx-3">
+            <span class="h4">Facture</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier bon Vente')" type="button"
+            (click)="editBon(bon)" class="btn btn-outline-info alert alert-info btn-sm mx-3">
+            <span class="h4">Modifier</span>
+        </button>
+        <button type="button" (click)="sendFactureWhatsApp(bon)"
+            [hidden]="!bon.numero_client || bon.code_client == 'C_1'"
+            [title]="!bon.numero_client ? 'Veuillez saisir le numéro client' : ''"
+            class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-whatsapp fa-1x"></i> Envoyer WhatsApp </span>
+        </button>
+        <a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#modalNumero"
+            [hidden]="bon.numero_client || bon.code_client == 'C_1'"
+            [title]="!bon.numero_client ? 'Veuillez saisir le numéro client' : ''"
+            class="btn btn-outline-success alert alert-success btn-sm mx-3">
+            <span class="h4"> <i class="fa fa-whatsapp fa-1x"></i> Envoyer WhatsApp </span>
+        </a>
+
+        <div class="modal modal-blur" id="modalNumero" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="modal-status bg-success"></div>
+                    <div class="modal-header">Mettre à jour son numéro</div>
+                    <div class="modal-body">
+                        <div class="mb-3 mt-2">
+                            <div class="md-2">
+                                <label for="phone" style="font-weight: 600;" class="form-label mt-1">
+                                    Numéro de Téléphone
+                                </label>
+                                <input placeholder="Exemple : +221771234567" type="text"
+                                    class="form-control border border-info border-5" [(ngModel)]="updateInfo.phone"
+                                    id="phone" name="phone">
+                            </div>
+                        </div>
+                        <div class="row d-flex justify-content-center ">
+                            <div class="col-auto">
+                                <button [disabled]="!updateInfo.phone" (click)="onSubmitUpdatePhone()" type="button"
+                                    class="btn btn-success w-100" data-bs-dismiss="modal">Envoyer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer bon Vente')" type="button"
+            (click)="openModalDeleteBon(bon.id)" data-bs-toggle="modal" data-bs-target="#modalDeleteBon"
+            class="btn btn-outline-danger alert alert-danger btn-sm mx-3"><span class="h4">Supprimer</span>
+        </button>
+        <button *ngIf="userService.checkPermissionExistence(firstRoleName+ ' annuler bon Vente')" type="button"
+            (click)="openModalCancelBon(bon.id)" data-bs-toggle="modal" data-bs-target="#modalCancelBon"
+            class="btn btn-outline-danger alert alert-danger  btn-sm mx-3"><span class="h4">Annuler</span>
+        </button>
+    </div>
+</div>
+
+<div class="card container-fluid mb-2 table-responsive pb-3"
+    *ngIf="userService.checkPermissionExistence(firstRoleName+ ' régler un bon Vente')">
+    <div class="row">
+        <fieldset class="col-md-12">
+            <legend>Réduction</legend>
+
+            <div class="input-group">
+                <!-- Reduction  -->
+                <span class="input-group-text">Réduction</span>
+                <input [disabled]="this.reduce > this.totttc && alert()" [(ngModel)]="reduce" name="reduce"
+                    type="number" class="form-control" />
+
+                <button [disabled]="!reduce || disableBtn" (click)="onSubmitReduction()"
+                    class="btn btn-outline-success mx-1" type="button">
+                    <i class="fa fa-check"></i>
+                </button>
+            </div>
+        </fieldset>
+    </div>
+</div>
+
+<div class="card">
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">N° Bon</label>
+                <span class="form-control bg-light">{{bon.numero}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Date Bon</label>
+                <span class="form-control bg-light">{{bon.date_bon}} </span>
+            </div>
+        </div>
+        <div class="col-md-1">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Heure</label>
+                <span class="form-control bg-light">{{bon.heure_bon}} </span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Client</label>
+                <span class="form-control bg-light">{{client.name}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Tva %</label>
+                <span class="form-control bg-light">{{bon.tottva}}</span>
+            </div>
+        </div>
+
+        <div class="col-md">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Auteur</label>
+                <span class="form-control bg-light">{{bon.auteur}}</span>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="card h3 text-center">Liste Produits</div>
+            <div class="table-responsive border mb-3">
+                <div style="overflow-y:scroll;max-height:250px;" id="pdfTable" #pdftable="">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Produit</th>
+                                <th scope="col">Prix</th>
+                                <th scope="col">Qty</th>
+                                <th scope="col">Sous Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let ligne of this.ligneBonService.listLigneBon ;let i = index;">
+                                <td>{{ligne.produit}}</td>
+                                <td>{{ligne.prix | number: '1.0-0'}}</td>
+                                <td>{{ligne.qty}}</td>
+                                <td>{{ligne.totht | number: '1.0-0'}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="row p-3">
+        <!-- Liste  -->
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Total HT</label>
+                <span class="form-control bg-light">{{bon.totht | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Total TTC</label>
+                <span class="form-control bg-light">{{bon.totttc | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Reduction</label>
+                <span class="form-control bg-light">{{bon.reduction | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="basic-url" style="font-weight: 600;" class="form-label">Net à payer</label>
+                <span class="form-control bg-light">{{bon.net | number: '1.0-0'}} F CFA</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal Delete Bon -->
+<div class="modal modal-blur" id="modalDeleteBon" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer la bon ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteBon()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Cancel Bon -->
+<div class="modal modal-blur" id="modalCancelBon" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir annuler la bon ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="cancelBon()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Ligne Bon -->
+<div class="modal modal-blur" id="modalDeleteLbon" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer cette ligne ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="deleteLigneBon()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alert Delete Last Ligne Bon-->
+<div class="modal modal-blur" id="modalAlertLine" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Attention !</h3>
+                <div class="text-muted">
+                    Ajoutez un produit avant de supprimer la dernière ligne ou bien supprimer la commamde !
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

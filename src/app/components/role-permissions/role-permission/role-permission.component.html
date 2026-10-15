@@ -1,0 +1,58 @@
+<!-- main content start -->
+<app-menu-utilisateur></app-menu-utilisateur>
+
+<div class="main-content">
+    <div class="page-header mb-2 bg-white">
+        <div class="container-fluid">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <!-- Page pre-title -->
+                    <h2 class="page-title">
+                        Liste roles et leurs permissons
+                    </h2>
+                </div>
+
+                <div class="card-body mb-3">
+                    <div class="d-flex">
+                        <div class="text-muted">
+                            <div class="input-group">
+                                <span class="input-group-text" id="basic-addon1">Rechercher :</span>
+                                <input type="text" id="inputSearch" class="form-control"
+                                    placeholder="Rechercher un utilisateur">
+                            </div>
+                        </div>
+                        <div class="ms-auto text-muted">
+                            <div class="mx-2">
+                                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' créer rôle et permissions Utilisateur')"
+                                    href="javascript:void(0)" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#modalNewUser" routerLink="/add-role-permission">
+                                    Nouveau
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-2" *ngFor="let rolePermisson of listeRolePermisson">
+                            <div class="card card-link card-link-rotate">
+                                <div class="text-center py-1 text-muted font-weight-medium">Rôle</div>
+                                <div class=" text-center h1 fw-bold my-3">{{rolePermisson.name}}</div>
+                                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier rôle et permissions Utilisateur')"
+                                    href="javascript:void(0)" (click)="edit(rolePermisson)" class="btn w-100">voir les
+                                    permissions</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- main content end -->

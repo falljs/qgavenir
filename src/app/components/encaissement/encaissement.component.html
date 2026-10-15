@@ -1,0 +1,364 @@
+<div class="card container_fluid">
+    <app-menu-vente></app-menu-vente>
+    <div class="card-header bg-white py-1 h3 mb-1"><span class="mx-1">La liste des encaissements</span></div>
+
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
+
+            <li class="nav-item" role="presentation"
+                *ngIf="userService.checkPermissionExistence(firstRoleName+ ' faire encaissement et décaissement Vente')">
+                <a href="#encaissement" class="nav-link active" data-bs-toggle="tab" aria-selected="true" role="tab">
+                    <button class="btn btn-success ">Encaissement</button>
+                </a>
+            </li>
+
+            <li class="nav-item" role="presentation"
+                *ngIf="userService.checkPermissionExistence(firstRoleName+ ' faire encaissement et décaissement Vente')">
+                <a href="#decaissement" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab"
+                    tabindex="-1">
+                    <button class="btn btn-warning ">Décaissement</button>
+                </a>
+            </li>
+
+            <li class="nav-item" role="presentation"
+                *ngIf="userService.checkPermissionExistence(firstRoleName+ ' voir caisse encaissement et décaissement Vente')">
+                <a href="#caisse" class="nav-link" data-bs-toggle="tab" aria-selected="false" role="tab" tabindex="-1">
+                    <button class="btn btn-info ">Caisse</button>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+            <!-- // Encaissement -->
+            <div class="tab-pane active show" id="encaissement" role="tabpanel"
+                *ngIf="userService.checkPermissionExistence(firstRoleName+ ' faire encaissement et décaissement Vente')">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-dark justify-content-center" style="height: 10px;">
+                                <div class="text-white h1 mt-1">Liste d'encaissements</div>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="row mb-2">
+
+                                    <div class="col-md">
+                                        <label for="exampleFormControlInput1" class="form-label">Motif</label>
+                                        <input #designationInputClient autofocus [(ngModel)]="client"
+                                            placeholder="saisir le nom du client" type="text" name="client"
+                                            class="form-control">
+                                    </div>
+
+                                    <div class="col-md">
+                                        <label for="exampleFormControlInput1" class="form-label">Montant</label>
+                                        <input [(ngModel)]="montant" type="number" name="montant" class="form-control">
+                                    </div>
+
+                                    <div class="col-md">
+                                        <label for="exampleFormControlInput1" class="form-label">&nbsp;</label>
+                                        <button (click)="save()" [disabled]="montant <= 0 ||  client == null "
+                                            class="btn btn-success"> Ajouter </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="exampleFormControlInput1" class="form-label">&nbsp;</label>
+                                        <div class="text-dark mt-1 h3">Montant Total = {{ montantTotal_encaissement |
+                                            number: '1.0-0' }} FCFA </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label for="dateChange" class="form-label">Recherche Par date</label>
+                                        <input type="date" id="dateChange" class="form-control"
+                                            (change)="OnChangeDate($event.target)">
+                                    </div>
+                                </div>
+                                <div class="container-fluid table-responsive border mb-3" style="height: 400px;">
+                                    <table class="table">
+                                        <thead class="sticky-top ">
+                                            <tr>
+                                                <th>Numero</th>
+                                                <th>Date</th>
+                                                <th>Verser Par</th>
+                                                <th>Encaiser Par</th>
+                                                <th>Montant</th>
+                                                <th
+                                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' valider encaissement Vente')">
+                                                    &nbsp;&nbsp;Etat</th>
+                                                <th>Option</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Message quand la liste est vide -->
+                                            <tr *ngIf="listEncaissements.length === 0">
+                                                <td class="font-italic text-center" colspan="7">
+                                                    <marquee behavior="alternate" class="h3 text-warning">
+                                                        Aucune donnée disponible pour le moment...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Liste des encaissements -->
+                                            <tr *ngFor="let encaissement of listEncaissements"
+                                                [ngStyle]="encaissement.deleted_at ? {'text-decoration': 'line-through'} : {}"
+                                                [ngClass]="{'alert alert-danger': encaissement.deleted_at}">
+
+                                                <td>{{ encaissement.numero }}</td>
+                                                <td>Le {{ encaissement.created_at | date: 'd-MM-y à H:mm' }}</td>
+                                                <td>{{ encaissement.client }}</td>
+                                                <td>{{ encaissement.auteur }}</td>
+                                                <td>{{ encaissement.montant | number: '1.0-0' }} FCFA</td>
+
+                                                <!-- État modifiable -->
+                                                <td
+                                                    *ngIf="userService.checkPermissionExistence(firstRoleName + ' valider encaissement Vente')">
+                                                    <div *ngIf="!encaissement.deleted_at">
+                                                        <label class="form-check form-switch">
+                                                            <input type="checkbox" class="form-check-input"
+                                                                [checked]="encaissement.etat === 'valide'"
+                                                                (change)="encaissement.etat === 'valide' ? invalide(encaissement.id) : valide(encaissement.id)">
+                                                            <span class="form-check-label" [ngClass]="{
+                                                            'text-success': encaissement.etat === 'valide',
+                                                            'text-danger': encaissement.etat === 'invalide'
+                                                            }">
+                                                                {{ encaissement.etat === 'valide' ? 'Valide' :
+                                                                'Invalide' }}
+                                                            </span>
+                                                        </label>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Actions -->
+                                                <td>
+                                                    <button
+                                                        *ngIf="userService.checkPermissionExistence(firstRoleName + ' supprimer encaissement et décaissement Vente')"
+                                                        (click)="openModalDelete(encaissement.id)"
+                                                        data-bs-toggle="modal" data-bs-target="#modalDelete"
+                                                        class="btn btn-sm btn-danger mx-1">
+                                                        <i class="fa fa-trash-o"></i>
+                                                    </button>
+
+                                                    <button hidden class="btn btn-sm btn-flickr mx-1">
+                                                        <i class="fa fa-edit"></i>
+                                                    </button>
+
+                                                    <button (click)="print(encaissement)"
+                                                        class="btn btn-sm btn-warning mx-1">
+                                                        <i class="fa fa-print"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- // Decaissement -->
+            <div class="tab-pane" id="decaissement" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header bg-dark justify-content-center" style="height: 10px;">
+                                <div class="text-white h1 mt-1">Liste décaissements</div>
+                            </div>
+                            <div class="card-body">
+
+                                <div class="row mb-2">
+
+                                    <div class="col-md-3">
+                                        <label for="exampleFormControlInput1" class="form-label">Motif</label>
+                                        <input #designationInputMotif autofocus [(ngModel)]="motif"
+                                            placeholder="saisir le motif du du décaissement" type="text" name="motif"
+                                            class="form-control">
+                                    </div>
+
+                                    <div class="col-md">
+                                        <label for="exampleFormControlInput1" class="form-label">Montant</label>
+                                        <input [(ngModel)]="montant" type="number" name="montant" class="form-control">
+                                    </div>
+
+                                    <div class="col-md">
+                                        <label for="exampleFormControlInput1" class="form-label">&nbsp;</label>
+                                        <button (click)="save_decaissement()"
+                                            [disabled]="montant <= 0 && motif == null " class="btn btn-success"> Ajouter
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="exampleFormControlInput1" class="form-label">&nbsp;</label>
+                                        <div class="text-dark mt-1 h3">Montant Total = {{ montantTotal_decaissement |
+                                            number: '1.0-0' }} FCFA </div>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label for="dateChange" class="form-label">Recherche Par date</label>
+                                        <input type="date" id="dateChange" class="form-control"
+                                            (change)="OnChangeDate_decaissement($event.target)">
+                                    </div>
+                                </div>
+                                <div class="container-fluid table-responsive border mb-3" style="height: 400px;">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Numero</th>
+                                                <th>Date</th>
+                                                <th>Motif</th>
+                                                <th>Décaisser Par</th>
+                                                <th>Montant</th>
+                                                <th>Option</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngIf="this.listDecaissements.length == 0">
+                                                <td class="font-italic text-center" colspan="7">
+                                                    <marquee behavior="alternate" direction="" class="h3 text-warning">
+                                                        Aucune donnée disponible pour le moment...
+                                                    </marquee>
+                                                </td>
+                                            </tr>
+                                            <tr *ngFor="let decaissement of this.listDecaissements">
+
+                                                <td>{{ decaissement.numero }}</td>
+                                                <td>Le {{ decaissement.created_at | date:"d-MM-y à H:mm" }}</td>
+                                                <td>{{ decaissement.motif }}</td>
+                                                <td>{{ decaissement.auteur }}</td>
+                                                <th>{{ decaissement.montant | number: '1.0-0' }} FCFA</th>
+                                                <td>
+                                                    <button
+                                                        *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer encaissement et décaissement Vente')"
+                                                        (click)="openModalDelete_decaissement(decaissement.id)"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalDelete_decaissement"
+                                                        class="btn btn-sm btn-danger mx-1"> <i
+                                                            class="fa fa-trash-o"></i></button>
+                                                    <button hidden class="btn btn-sm btn-flickr mx-1"> <i
+                                                            class="fa fa-edit"></i></button>
+                                                    <button (click)="print_decaissement(decaissement)"
+                                                        class="btn btn-sm btn-warning mx-1"> <i
+                                                            class="fa fa-print"></i></button>
+                                                </td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- // Caisse -->
+            <div class="tab-pane" id="caisse" role="tabpanel">
+                <div class="row">
+                    <div class="col-md">
+                        <div class="card p-2">
+                            <div class="h2">Montant total encaisser </div>
+                            <span class="btn h2">{{ montantTotal_encaissement | number: '1.0-0' }} FCFA</span>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="card p-2">
+                            <div class="h2">Montant total décaisser </div>
+                            <span class="btn h2">{{ montantTotal_decaissement | number: '1.0-0' }} FCFA</span>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="card p-2">
+                            <div class="h2">Montant total restant </div>
+                            <span class="btn h2">{{ montantTotal_encaissement - montantTotal_decaissement | number:
+                                '1.0-0'}} FCFA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Commande -->
+<div class="modal modal-blur" id="modalDelete" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="delete()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Commande -->
+<div class="modal modal-blur" id="modalDelete_decaissement" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-labelledby="staticBackdropLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-status bg-danger"></div>
+            <div class="modal-body text-center py-4">
+                <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24"
+                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M12 9v2m0 4v.01" />
+                    <path
+                        d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                </svg>
+                <h3>Êtes-vous sûr ?</h3>
+                <div class="text-muted">
+                    de vraiment vouloir supprimer ? Ce que vous avez fait ne peut être annulé !
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" class="btn w-100" data-bs-dismiss="modal">NON</button>
+                        </div>
+                        <div class="col">
+                            <a href="javascript:void(0)" (click)="delete_decaissement()" class="btn btn-danger w-100"
+                                data-bs-dismiss="modal">
+                                OUI
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,753 @@
+<div class="row row-deck row-cards container-fluid">
+
+  <app-menu-stock></app-menu-stock>
+
+  <!--Liste des Produit-->
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Liste des Produits</h3>
+        <!-- Afficher par quantité -->
+        <select class="form-select w-auto mx-2" [(ngModel)]="defaultItem" (change)="onItemsPerPageChange()">
+          <option value="50" selected disabled>Afficher par 50</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+          <option [value]="150">150</option>
+          <option [value]="200">200</option>
+          <option [value]="nbrProduit">Tous</option>
+        </select>
+      </div>
+      <div class="card-body border-bottom py-3">
+        <div class="input-group">
+          <span class="input-group-text d-none d-lg-block" id="basic-addon1">Rechercher :</span>
+          <input type="text" (keyup)="search()" id="inputDesignation" class="form-control w-25"
+            placeholder="Rechercher un produit">
+          <select name="categorie" class="form-control mx-2" (change)="OnChangeCategory($event.target)">
+            <option value=""> Choisis une Catégorie </option>
+            <option *ngFor="let categorie of categories " value="{{ categorie }}"> {{ categorie }}</option>
+          </select>
+          <select name="qty" class="form-control mx-2" (change)="OnChangeQty($event.target)">
+            <option value=""> Trier par Quantité </option>
+            <option value="qtyOn">Quantité en stock</option>
+            <option value="qtyAlert">Quantité en alert</option>
+            <option value="qtyOff">Quantité terminé</option>
+          </select>
+          <div class="dt-buttons btn-group">
+            <button class="btn btn-secondary buttons-copy mx-1 buttons-html5" tabindex="0"
+              aria-controls="example"><span>Copy</span>
+            </button>
+            <button class="btn btn-secondary buttons-excel mx-1 buttons-html5" tabindex="0" aria-controls="example"
+              (click)="export()"><span>Excel</span>
+            </button>
+            <button class="btn btn-secondary buttons-pdf mx-1 buttons-html5" tabindex="0" aria-controls="example"
+              (click)="exportPdf()">
+              <span>PDF</span>
+            </button>
+            <span *ngIf="printQty">
+              <button *ngIf="qty == 'qtyOn'" class="btn btn-secondary mx-1 buttons-print" tabindex="0"
+                aria-controls="example" (click)="printQtyOn()">
+                <span>Print</span>
+              </button>
+              <button *ngIf="qty == 'qtyOff'" class="btn btn-secondary mx-1 buttons-print" tabindex="0"
+                aria-controls="example" (click)="printQtyOff()"><span>Print</span>
+              </button>
+              <button *ngIf="qty == 'qtyAlert'" class="btn btn-secondary mx-1 buttons-print" tabindex="0"
+                aria-controls="example" (click)="printQtyAlert()"><span>Print</span>
+              </button>
+            </span>
+
+            <span *ngIf="printCat">
+              <button hidden *ngIf="cat == ''" class="btn btn-secondary buttons-print" tabindex="0"
+                aria-controls="example" (click)="printProduit()">
+                <span>Print</span>
+              </button>
+              <button *ngIf="cat" class="btn btn-secondary buttons-print" tabindex="0" aria-controls="example"
+                (click)="printCategorie()"><span>Print</span>
+              </button>
+
+            </span>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table card-table table-vcenter text-nowrap datatable">
+          <thead>
+            <tr>
+              <th class="w-1">Code</th>
+              <th>Désignation</th>
+              <th>Quantité</th>
+              <th>Prix d'achat</th>
+              <th>Prix global</th>
+              <th>Prix de vente</th>
+              <th>Prix En gros</th>
+              <th>Réference</th>
+              <th>Catégorie</th>
+              <th>Statut</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let produit of produits | paginate: { itemsPerPage: defaultItem, currentPage: page, totalItems: nbrProduit }">
+              <td><span class="text-muted">{{produit.code}}</span></td>
+              <td>
+                <a class="text-dark" (click)="detail(produit)" data-bs-toggle="offcanvas" href="#detailOffcanvasStart"
+                  role="button" aria-controls="detailOffcanvasStart">
+                  {{produit.designation}}
+                </a>
+              </td>
+              <td>
+                <a class="text-dark" (click)="detail(produit)" data-bs-toggle="offcanvas" href="#detailOffcanvasStart"
+                  role="button" aria-controls="detailOffcanvasStart">
+                  <span *ngIf="produit.qty > produit.qtyAlert" class="fa fa-database text-success"></span>
+                  <span *ngIf="produit.qty <= produit.qtyAlert  && produit.qty > 0"
+                    class="fa fa-database text-warning"></span>
+                  <span *ngIf="produit.qty == 0" class="fa fa-database text-danger"></span>
+                  <span *ngIf="produit.qty < 0" class="fa fa-database text-danger"></span>
+                  {{produit.qty}}
+                </a>
+              </td>
+              <td>{{produit.prix_achat | number: '1.0-0'}} F CFA</td>
+              <td>{{produit.prix_achat * produit.qty | number: '1.0-0'}} F CFA</td>
+              <td>{{produit.prix | number: '1.0-0'}} F CFA</td>
+              <td>{{produit.prix_gros | number: '1.0-0'}} F CFA</td>
+              <td>{{produit.ref}}</td>
+              <td>{{produit.famille}}</td>
+              <td>
+                <a class="text-dark" (click)="detail(produit)" data-bs-toggle="offcanvas" href="#detailOffcanvasStart"
+                  role="button" aria-controls="detailOffcanvasStart">
+                  <span *ngIf="produit.qty > produit.qtyAlert" class="badge bg-success me-1">En stock</span>
+                  <span *ngIf="produit.qty <= produit.qtyAlert && produit.qty > 0" class="badge bg-warning me-1">En
+                    alerte</span>
+                  <span *ngIf="produit.qty == 0" class="badge bg-danger me-1">Terminée</span>
+                  <span *ngIf="produit.qty < 0 " class="badge bg-danger me-1">Empruntée</span>
+                </a>
+              </td>
+              <td>
+                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' detail produit Stock')"
+                  class="btn btn-sm text-primary mx-2" (click)="detail(produit)" data-bs-toggle="offcanvas"
+                  href="#detailOffcanvasStart" role="button" aria-controls="detailOffcanvasStart">
+                  <i class="fa fa-eye"></i>
+                </a>
+                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' modifier produit Stock')"
+                  class="btn btn-sm text-warning mx-2" (click)="update(produit)" data-bs-toggle="modal"
+                  data-bs-target="#modal-product-update">
+                  <i class="fa fa-edit"></i>
+                </a>
+                <a *ngIf="userService.checkPermissionExistence(firstRoleName+ ' supprimer produit Stock')"
+                  class="btn btn-sm text-danger mx-1" (click)="modalDeleteProduit(produit.id)" data-bs-toggle="modal"
+                  data-bs-target="#modal-danger">
+                  <i class="fa fa-trash"></i>
+                </a>
+                <a *ngIf="!isInEntrepot(produit.id)" class="btn btn-sm text-info mx-1"
+                  (click)="modalCreateEntrepot(produit, 'validated')" data-bs-toggle="modal"
+                  data-bs-target="#modal-confirm-entrepot" title="Ajouter à l'entrepôt (basé sur le stock)">
+                  <i class="fa fa-building"></i>
+                </a>
+
+                <a *ngIf="!isInEntrepot(produit.id)" class="btn btn-sm text-purple mx-1"
+                  (click)="modalCreateEntrepot(produit, 'free')" data-bs-toggle="modal"
+                  data-bs-target="#modal-confirm-entrepot" title="Ajouter à l'entrepôt (quantité libre)">
+                  <i class="fa fa-cubes"></i>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="bg-light text-white">
+              <td class="bg-secondary fw-bold">Total Général</td>
+              <td></td>
+              <td class="bg-secondary">{{totalQty}}</td>
+              <td class="bg-secondary">{{totalPrix | number: '1.0-0'}} F CFA</td>
+              <td class="bg-secondary">{{totalPrixGlobal | number: '1.0-0'}} F CFA</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="card-footer d-flex align-items-center" style="height: 40px;">
+        <p class="m-0 text-muted">Affichage
+          <span *ngIf="page == 1">{{defaultItem}}</span>
+          <span *ngIf="page != 1 && page != nbrPage">{{defaultItem * page}}</span>
+          <span *ngIf="page != 1 && page == nbrPage">{{nbrProduit}}</span>
+          sur <span>{{nbrProduit}}</span> Produits
+        </p>
+        <ul class="pagination m-0 ms-auto mt-3">
+          <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant">
+          </pagination-controls>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal New Product -->
+<div class="modal modal-blur " id="modal-product" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ajouter un produit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off" novalidate>
+          <div class="mb-2">
+            <label class="form-label">Designation <span class="text-danger mx-1">*</span></label>
+            <input type="text" class="form-control" placeholder="Designation" formControlName="designation"
+              id="designation">
+            <div *ngIf="f['designation'].touched && f['designation'].invalid" class="alert alert-danger">
+              <div *ngIf="f['designation'].errors && f['designation'].errors['required']">Donner un nom au produit.
+              </div>
+              <div *ngIf="f['designation'].errors && f['designation'].errors['minlength']">
+                Le nom du produit doit être composé d’au minimum deux caractères.
+              </div>
+
+            </div>
+            <div *ngIf="msg_designation" class="alert alert-danger">
+              <span>{{msg_designation}}</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Quantité</label>
+              <input type="number" class="form-control" placeholder="Qty en stock" formControlName="qty" id="qty"
+                (keyup)="keyupStock()">
+              <div *ngIf="f['qty'].touched && f['qty'].invalid" class="alert alert-danger">
+                <div *ngIf="f['qty'].errors && f['qty'].errors['required']">Ce champ est obligatoire !.</div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Quantité Alert</label>
+              <input type="number" class="form-control" placeholder="Qty alert stock" formControlName="qtyAlert"
+                id="qtyAlert">
+            </div>
+          </div>
+          <div class="col-md-12 row mb-2" *ngIf="qtyStock">
+            <div class="col-md mt-2">
+              <div *ngIf="!isChecked">
+                <label class="form-check form-check-inline">
+                  <input type="checkbox" (change)="onCheckboxChange()" class="form-check-input">
+                  <span class="form-label">Stocker dans un entrepôt</span>
+                </label>
+              </div>
+              <div *ngIf="isChecked">
+                <label class="form-check form-check-inline">
+                  <input type="checkbox" (change)="unCheckboxChange()" class="form-check-input" checked>
+                  <span class="form-label">Stocker dans un entrepôt</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md">
+              <div *ngIf="isChecked">
+                <label class="form-label">Quantité à stocker dans le dépôt</label>
+                <input type="number" class="form-control" formControlName="entrepot_1" id="entrepot_1"
+                  (keyup)="keyupDepot()">
+              </div>
+            </div>
+
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Prix d'achat <span class="text-danger mx-1">*</span></label>
+              <input type="number" class="form-control" placeholder="Prix d'achat" formControlName="prix_achat"
+                id="prix_achat">
+              <div *ngIf="f['prix_achat'].touched && f['prix_achat'].invalid " class="alert alert-danger">
+                <div *ngIf="f['prix_achat'].errors && f['prix_achat'].errors['required']">Ce champ est obligatoire !.
+                </div>
+                <div *ngIf="f['prix_achat'].errors && f['prix_achat'].errors['min']">
+                  <span class="h5"> Le prix d’achat doit être supérieur ou égal à 10 FCFA.</span>
+                </div>
+
+              </div>
+
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Prix de vente</label>
+              <input type="number" class="form-control" placeholder="Prix de vente" formControlName="prix" id="prix">
+              <div *ngIf="f['prix'].touched && f['prix'].invalid" class="alert alert-danger">
+                <div *ngIf="f['prix'].errors && f['prix'].errors['required']">Ce champ est obligatoire !.</div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Prix en gros</label>
+              <input type="number" class="form-control" placeholder="prix en gros" formControlName="prix_gros"
+                id="prix_gros">
+            </div>
+
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Prix douzaine</label>
+              <input type="number" class="form-control" placeholder="Prix douzaine" formControlName="prix_douzaine"
+                id="prix_douzaine">
+            </div>
+
+            <div class="col-md-4 mb-2">
+              <label class="form-label">Prix carton</label>
+              <input type="number" class="form-control" placeholder="Prix carton" formControlName="prix_carton"
+                id="prix_carton">
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Référence</label>
+              <input type="text" class="form-control" placeholder="Réference" formControlName="ref" id="ref">
+            </div>
+
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Code barre</label>
+              <input type="text" class="form-control" placeholder="Code barre" formControlName="code_barre"
+                id="code_barre">
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Catégorie</label>
+              <input type="text" class="form-control" placeholder="Catégorie" formControlName="famille" id="famille">
+            </div>
+            <div class="col-md-6 mb-2">
+              <label class="form-label">Marque</label>
+              <input type="text" class="form-control" placeholder="Marque" formControlName="marque" id="marque">
+            </div>
+          </div>
+
+          <div class="col-md-12" *ngIf="!newInputFn">
+            <div class="mb-2">
+              <label class="form-label">Fournisseur</label>
+              <div class="input-group">
+                <button (click)="openFournisseur()" class="btn mx-1"><i class="fa fa-plus"></i></button>
+                <div class="seach-fournisseurs">
+                  <div class="form-select selected" (click)="showDropdown = !showDropdown">
+                    <ng-container *ngIf="selectedFournisseur; else placeholder">
+                      <span>{{ selectedFournisseur.name }}</span>
+                    </ng-container>
+                    <ng-template #placeholder>
+                      <span>Sélectionner un fournisseur...</span>
+                    </ng-template>
+                  </div>
+
+                  <div class="form-select showlists" *ngIf="showDropdown">
+                    <input type="text" [(ngModel)]="searchSelect" id="searchSelect" placeholder="Rechercher..."
+                      [ngModelOptions]="{standalone: true}" />
+
+                    <div class="showlists-item" *ngFor="let fournisseur of filteredFournisseur"
+                      (click)="selectFournisseur(fournisseur); showDropdown = false">
+                      <span>{{ fournisseur.name }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="col-md-12" *ngIf="newInputFn">
+            <label class="form-label">Fournisseur</label>
+            <div class="input-group mb-2">
+              <button type="button" class="btn btn-sm btn-danger mx-1" (click)="hideInputFn()"> <i
+                  class="fa fa-ban"></i> </button>
+              <input type="text" class="form-control" [(ngModel)]="newFournisseur" id="newFournisseur"
+                [ngModelOptions]="{standalone: true}" (keyup)="inputFn()" placeholder="Nom du Fournisseur">
+              <button type="button" [disabled]="newFournisseur == ''" (click)="onSubmitFournisseur()"
+                class="btn btn-sm btn-success mx-1"> <i class=" fa fa-check"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <button type="button" class="btn btn-danger" style="float: left;" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success" style="float: right;"
+              [disabled]="!form.valid || newInputFn">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update Product -->
+<div class="modal modal-blur " id="modal-product-update" data-bs-backdrop="static" data-bs-keyboard="false"
+  tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modification d'un produit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="formUp" (ngSubmit)="onUpdate()" autocomplete="off" novalidate>
+          <div class="row">
+            <div class="col-md-6 mb-2">
+              <div class="card">
+                <div class="card-header bg-light">Information Produit</div>
+                <div class="card-body">
+                  <div class="mb-2">
+                    <label class="form-label">Code Produit</label>
+                    <input type="text" formControlName="code" class="form-control" placeholder="Code produit" id="code"
+                      readonly>
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label">Designation</label>
+                    <input type="text" class="form-control" placeholder="Designation" formControlName="designation"
+                      id="designation">
+                    <div *ngIf="fUp['designation'].touched && fUp['designation'].invalid" class="alert alert-danger">
+                      <div *ngIf="fUp['designation'].errors && fUp['designation'].errors['required']">Donner un nom au
+                        produit.</div>
+                    </div>
+                    <div *ngIf="msg_designation" class="alert alert-danger">
+                      <span>{{msg_designation}}</span>
+                    </div>
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label">Référence</label>
+                    <input type="text" class="form-control" placeholder="Référence" formControlName="ref" id="ref">
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label">Code barre</label>
+                    <input type="text" class="form-control" placeholder="Code barre" formControlName="code_barre"
+                      id="code_barre">
+                  </div>
+
+                  <div class="mb-2" *ngIf="!upInputFn">
+                    <label class="form-label">Fournisseur</label>
+                    <div class="input-group">
+                      <button (click)="openFournisseurUp()" class="btn mx-1"><i class="fa fa-plus"></i></button>
+                      <div class="seach-fournisseurs-up">
+                        <div class="form-select selected" (click)="showDropdownUp = !showDropdownUp">
+                          <ng-container *ngIf="selectedFournisseurUp; else placeholder">
+                            <span>{{ selectedFournisseurUp.name }}</span>
+                          </ng-container>
+                          <ng-template #placeholder>
+                            <span>Sélectionner un fournisseur...</span>
+                          </ng-template>
+                        </div>
+
+                        <div class="form-select showlists" *ngIf="showDropdownUp">
+                          <input type="text" [(ngModel)]="searchSelectUp" id="searchSelectUp"
+                            placeholder="Rechercher..." [ngModelOptions]="{standalone: true}" />
+
+                          <div class="showlists-item" *ngFor="let fournisseur of filteredFournisseurUp"
+                            (click)="selectFournisseurUp(fournisseur); showDropdownUp = false">
+                            <span>{{ fournisseur.name }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-2" *ngIf="upInputFn">
+                    <label class="form-label">Fournisseur</label>
+                    <div class="input-group ">
+                      <button type="button" class="btn btn-sm btn-danger mx-1" (click)="hideInputFnUp()"> <i
+                          class="fa fa-ban"></i></button>
+                      <input type="text" class="form-control" [(ngModel)]="upFournisseur" id="upFournisseur"
+                        [ngModelOptions]="{standalone: true}" (keyup)="inputFnUp()" placeholder="Nom du Fournisseur">
+                      <button type="button" [disabled]="upFournisseur == ''" (click)="onSubmitFournisseurUp()"
+                        class="btn btn-sm btn-success mx-1"> <i class=" fa fa-check"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label">Catégorie</label>
+                    <input type="text" class="form-control" placeholder="Catégorie" formControlName="famille"
+                      id="famille">
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label">Marque</label>
+                    <input type="text" class="form-control" placeholder="Marque" formControlName="marque" id="marque">
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 mb-2">
+              <div class="card">
+                <div class="card-header bg-light">Quantité Produit</div>
+                <div class="card-body">
+                  <div class="row">
+
+                    <div class="col-md-12">
+                      <label class="form-label">Prix d'achat <span class="text-danger mx-1">*</span></label>
+                      <input type="number" class="form-control" placeholder="Prix d'achat" formControlName="prix_achat"
+                        id="prix_achat">
+                      <div *ngIf="fUp['prix_achat'].touched && fUp['prix_achat'].invalid " class="alert alert-danger">
+                        <div *ngIf="fUp['prix_achat'].errors && fUp['prix_achat'].errors['required']">Ce champ est
+                          obligatoire !.
+                        </div>
+                        <div *ngIf="fUp['prix_achat'].errors && fUp['prix_achat'].errors['min']">
+                          <span class="h5"> Le prix d’achat doit être supérieur ou égal à 10 FCFA.</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-12">
+                      <label class="form-label">Prix de vente</label>
+                      <input type="number" class="form-control" placeholder="Prix de vente" formControlName="prix"
+                        id="prix">
+                    </div>
+
+                    <div class="col-md-12">
+                      <label class="form-label">Prix en gros</label>
+                      <input type="number" class="form-control" placeholder="Prix en gros" formControlName="prix_gros"
+                        id="prix_gros">
+                    </div>
+
+                    <div class="col-md-12">
+                      <label class="form-label">Prix carton</label>
+                      <input type="number" class="form-control" placeholder="Prix carton" formControlName="prix_carton"
+                        id="prix">
+                    </div>
+
+                    <div class="col-md-12">
+                      <label class="form-label">Prix douzaine</label>
+                      <input type="number" class="form-control" placeholder="Prix douzaine"
+                        formControlName="prix_douzaine" id="prix_douzaine">
+                    </div>
+
+                    <div class="col-md-12">
+                      <div class="mb-2">
+                        <label class="form-label">Quantité Alert</label>
+                        <input type="number" class="form-control" placeholder="Qty alert stock"
+                          formControlName="qtyAlert" id="qtyAlert">
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" formControlName="description" rows="6" id="description"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-1">
+            <button type="button" class="btn btn-danger" style="float: left;" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-success" style="float: right;"
+              [disabled]="!formUp.valid || upInputFn">Mettre à jour</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Import Product -->
+<div class="modal modal-blur " id="import-product" tabindex="-1" role="dialog" data-bs-backdrop="static"
+  data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-status bg-info"></div>
+      <div class="modal-body text-center py-4">
+        <div class="mb-3" *ngIf="!isLoading">
+          <div class="form-label">Importer des produits depuis un fichier excel</div>
+          <input type="file" class="form-control" (change)="onFileSelected($event)" accept=".xlsx,.xls,.csv" />
+        </div>
+        <div class="mb-3" *ngIf="isLoading">
+          <div class="progress">
+            <div class="progress-bar progress-bar-indeterminate bg-green"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" [hidden]="isLoading">
+        <div class="w-100">
+          <div class="row">
+            <div class="col">
+              <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+            </div>
+            <div class="col">
+              <button (click)="onSendFile()" class="btn btn-success w-100" [disabled]="file == null">
+                Importer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Delete Product -->
+<div class="modal modal-blur " id="modal-danger" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-status bg-danger"></div>
+      <div class="modal-body text-center py-4">
+        <!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+        <i class="fa mb-2 icon-lg"
+          [ngClass]="modeEntrepot === 'validated' ? 'fa-building text-info' : 'fa-cubes text-purple'"
+          style="font-size: 2rem;"></i>
+        <h3>Êtes-vous sûr ?</h3>
+        <div class="text-muted">
+          de vraiment vouloir supprimer ce produit ? Ce que vous avez fait ne peut être annulé.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col">
+              <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+            </div>
+            <div class="col">
+              <a href="javascript:void(0)" (click)="deleteProduit()" class="btn btn-danger w-100"
+                data-bs-dismiss="modal">
+                OUI
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Confirmation Entrepôt -->
+<div class="modal modal-blur" id="modal-confirm-entrepot" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-status" [ngClass]="modeEntrepot === 'validated' ? 'bg-info' : 'bg-purple'"></div>
+      <div class="modal-body text-center py-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 icon-lg"
+          [ngClass]="modeEntrepot === 'validated' ? 'text-info' : 'text-purple'" width="24" height="24"
+          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+          stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M12 9v2m0 4v.01" />
+          <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+        </svg>
+
+        <h3>Ajouter à l'entrepôt</h3>
+        <span class="badge mb-2" [ngClass]="modeEntrepot === 'validated' ? 'bg-info' : 'bg-purple'">
+          {{ modeEntrepot === 'validated' ? 'Basé sur le stock' : 'Quantité libre' }}
+        </span>
+
+        <div class="text-muted mb-3" *ngIf="produitSelectEntrepot">
+          Produit : <strong>{{ produitSelectEntrepot.designation }}</strong><br>
+          <span *ngIf="modeEntrepot === 'validated'">
+            Stock disponible : <strong>{{ produitSelectEntrepot.qty }}</strong>
+          </span>
+        </div>
+
+        <div class="mb-2 text-start">
+          <label class="form-label">Quantité à stocker dans l'entrepôt</label>
+          <input type="number" class="form-control" [(ngModel)]="stockEntrepot" [ngModelOptions]="{standalone: true}"
+            min="0" [max]="modeEntrepot === 'validated' ? produitSelectEntrepot?.qty : null" id="stockEntrepot">
+          <div class="form-text" *ngIf="modeEntrepot === 'free'">
+            Aucune vérification par rapport au stock actuel du produit.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="w-100">
+          <div class="row">
+            <div class="col">
+              <button class="btn w-100" data-bs-dismiss="modal">NON</button>
+            </div>
+            <div class="col">
+              <a href="javascript:void(0)" (click)="confirmCreateEntrepot()" class="btn w-100"
+                [ngClass]="modeEntrepot === 'validated' ? 'btn-info' : 'btn-purple'" data-bs-dismiss="modal">
+                OUI
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div *ngIf="produitDetail" class="offcanvas offcanvas-start" tabindex="-1" id="detailOffcanvasStart"
+  aria-labelledby="detailOffcanvasStartLabel" style="width: 500px;">
+  <div class="offcanvas-header">
+    <div class="offcanvas-title d-flex justify-content-center" id="detailOffcanvasStartLabel">
+      <span class="h3">Détail Produit</span>
+    </div>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="card">
+      <div class="card-header d-flex justify-content-center h3 ">
+        {{produitDetail.produit?.designation}}
+      </div>
+      <div class="card-body">
+
+        <div class="card p-3 mb-3">
+          <h5 class="card-title mb-3">
+            💰 Résumé sur les prix
+          </h5>
+
+          <div class="d-flex flex-column gap-2">
+            <div><span class="text-muted">Prix d'achat : </span> <strong>{{produitDetail.produit?.prix_achat}}</strong>
+            </div>
+            <div><span class="text-muted">Prix en détail : </span> <strong>{{produitDetail.produit?.prix}}</strong>
+            </div>
+            <div><span class="text-muted">Prix en gros : </span> <strong>{{produitDetail.produit?.prix_gros}}</strong>
+            </div>
+            <div><span class="text-muted">Prix en douzaine : </span>
+              <strong>{{produitDetail.produit?.prix_douzaine}}</strong>
+            </div>
+            <div><span class="text-muted">Prix en carton : </span>
+              <strong>{{produitDetail.produit?.prix_carton}}</strong>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="card p-3 mb-3">
+          <h5 class="card-title mb-3">📦 Inventaire Résumé</h5>
+
+          <div class="d-flex flex-column gap-2">
+            <div>
+              <div><span class="text-muted">Quantité actuellement en stock : </span>
+                <strong>{{produitDetail.produit?.qty}}</strong>
+              </div>
+            </div>
+            <div>
+              <span class="text-muted">Statut : </span>
+              <span class="badge me-1"
+                [ngClass]="getStockStatus(produitDetail.produit?.qty, produitDetail.produit?.qtyAlert).class">
+                <i class="fa"
+                  [ngClass]="getStockStatus(produitDetail.produit?.qty, produitDetail.produit?.qtyAlert).icon + ' me-1'"></i>
+                {{ getStockStatus(produitDetail.produit?.qty, produitDetail.produit?.qtyAlert).label }}
+              </span>
+            </div>
+            <div><span class="text-muted">Quantité en transit : </span> <strong>{{produitDetail.transite}}</strong>
+            </div>
+            <div><span class="text-muted">Dernier approvisionnement : </span>
+              <strong>({{produitDetail.lastAchat?.qty}}) </strong>
+              <strong>{{ produitDetail.lastAchat?.updated_at | date:'EEEE d MMMM y à HH:mm' }}</strong>
+            </div>
+            <div><span class="text-muted">Quantité totale stockée depuis l'achat : </span>
+              <strong>{{produitDetail.totalStock}}</strong>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+    <div class="mt-3 teext-center">
+      <button class="btn btn-primary mb-2" (click)="inventaire(produitDetail)" type="button"
+        data-bs-dismiss="offcanvas">
+        Voir détail complet
+      </button>
+    </div>
+  </div>
+</div>
